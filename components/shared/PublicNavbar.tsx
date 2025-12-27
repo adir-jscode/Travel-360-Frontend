@@ -1,4 +1,4 @@
-import { Menu } from "lucide-react";
+import { Menu, Plane } from "lucide-react";
 import Link from "next/link";
 import { Button } from "../ui/button";
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "../ui/sheet";
@@ -12,7 +12,8 @@ const PublicNavbar = () => {
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur  dark:bg-background/95">
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
         <Link href="/" className="flex items-center space-x-2">
-          <span className="text-xl font-bold text-primary">Travel 360</span>
+          <Plane className="h-6 w-6 text-orange-500" />
+          <span className="text-xl font-bold text-primary">Travel360</span>
         </Link>
 
         <nav className="hidden md:flex items-center space-x-6 text-sm font-medium">
@@ -29,7 +30,7 @@ const PublicNavbar = () => {
 
         <div className="hidden md:flex items-center space-x-2">
           <Link href="/login" className="text-lg font-medium">
-            <Button>Login</Button>
+            <Button variant={"secondary"}>Login</Button>
           </Link>
           <Link href="/register" className="text-lg font-medium">
             <Button>Register</Button>
