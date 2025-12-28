@@ -46,14 +46,14 @@ export function TravelHome() {
       rating: 4.7,
       price: "$1,500",
     },
-    {
-      title: "Queenstown, NZ",
-      location: "Oceania",
-      imageUrl:
-        "https://images.unsplash.com/photo-1507699622177-48857e215655?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80",
-      rating: 4.9,
-      price: "$2,800",
-    },
+    // {
+    //   title: "Queenstown, NZ",
+    //   location: "Oceania",
+    //   imageUrl:
+    //     "https://images.unsplash.com/photo-1507699622177-48857e215655?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80",
+    //   rating: 4.9,
+    //   price: "$2,800",
+    // },
   ];
   const trips = [
     {

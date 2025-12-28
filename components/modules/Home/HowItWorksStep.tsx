@@ -15,7 +15,7 @@ export function HowItWorksStep({
       {/* Connector Line (hidden on mobile/last item) */}
       <div className="absolute top-12 left-1/2 -z-10 hidden h-1 w-full -translate-y-1/2 bg-gray-200 lg:block last:hidden" />
 
-      <div className="relative mb-6 flex h-24 w-24 items-center justify-center rounded-full bg-gradient-to-br from-orange-100 to-pink-100 shadow-inner transition-transform duration-300 group-hover:scale-110 group-hover:from-orange-200 group-hover:to-pink-200">
+      <div className="relative mb-6 flex h-24 w-24 items-center justify-center rounded-full bg-linear-to-br from-orange-100 to-pink-100 shadow-inner transition-transform duration-300 group-hover:scale-110 group-hover:from-orange-200 group-hover:to-pink-200">
         <Icon className="h-10 w-10 text-orange-600 transition-colors group-hover:text-pink-600" />
         <div className="absolute -right-2 -top-2 flex h-8 w-8 items-center justify-center rounded-full bg-blue-600 text-sm font-bold text-white shadow-md">
           {stepNumber}
