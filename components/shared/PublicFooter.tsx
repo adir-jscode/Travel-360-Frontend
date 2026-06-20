@@ -1,29 +1,87 @@
-import { Plane } from "lucide-react";
-
+import { Compass, Instagram, Twitter, Youtube } from "lucide-react";
+import Link from "next/link";
 export default function PublicFooter() {
   return (
     <div>
-      <footer className="bg-gray-900 py-12 px-4 text-gray-400">
-        <div className="mx-auto max-w-7xl flex flex-col items-center justify-between gap-6 md:flex-row">
-          <div className="flex items-center gap-2">
-            <Plane className="h-6 w-6 text-orange-500" />
-            <span className="text-xl font-bold text-white">Travel360</span>
+      <footer className="mt-24 border-t border-border bg-secondary/40">
+        <div className="mx-auhref grid max-w-7xl gap-10 px-4 py-14 sm:px-6 md:grid-cols-4 lg:px-8">
+          <div className="md:col-span-1">
+            <Link href="/" className="flex items-center gap-2">
+              <span className="grid h-9 w-9 place-items-center rounded-xl bg-gradient-sunset text-white">
+                <Compass className="h-5 w-5" />
+              </span>
+              <span className="text-lg font-black">
+                Travel<span className="text-primary">360</span>
+              </span>
+            </Link>
+            <p className="mt-3 max-w-xs text-sm text-muted-foreground">
+              Find compatible travel buddies for your next adventure. Solo
+              journeys, shared shrefries.
+            </p>
+            <div className="mt-4 flex gap-2">
+              {[Instagram, Twitter, Youtube].map((Icon, i) => (
+                <a
+                  key={i}
+                  href="#"
+                  className="grid h-9 w-9 place-items-center rounded-full border border-border hover:bg-accent"
+                >
+                  <Icon className="h-4 w-4" />
+                </a>
+              ))}
+            </div>
           </div>
-          <div className="flex gap-8 text-sm font-medium">
-            <a href="#" className="hover:text-white transition-colors">
-              Destinations
-            </a>
-            <a href="#" className="hover:text-white transition-colors">
-              Trips
-            </a>
-            <a href="#" className="hover:text-white transition-colors">
-              Community
-            </a>
-            <a href="#" className="hover:text-white transition-colors">
-              About
-            </a>
+          {[
+            {
+              title: "Explore",
+              links: [
+                ["Destinations", "/explore"],
+                ["Travel Plans", "/travel-plans"],
+                ["Pricing", "/pricing"],
+              ],
+            },
+            {
+              title: "Company",
+              links: [
+                ["About", "/"],
+                ["Careers", "/"],
+                ["Press", "/"],
+              ],
+            },
+            {
+              title: "Support",
+              links: [
+                ["Help Center", "/"],
+                ["Safety", "/"],
+                ["Contact", "/"],
+              ],
+            },
+          ].map((col) => (
+            <div key={col.title}>
+              <h4 className="text-sm font-bold uppercase tracking-wider text-foreground">
+                {col.title}
+              </h4>
+              <ul className="mt-4 space-y-2">
+                {col.links.map(([label, href]) => (
+                  <li key={label}>
+                    <Link
+                      href={href}
+                      className="text-sm text-muted-foreground hover:text-foreground"
+                    >
+                      {label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
+        <div className="border-t border-border">
+          <div className="mx-auhref flex max-w-7xl flex-col items-center justify-between gap-2 px-4 py-6 text-xs text-muted-foreground sm:flex-row sm:px-6 lg:px-8">
+            <span>
+              © {new Date().getFullYear()} Travel360. Wander hrefgether.
+            </span>
+            <span>Made with ♥ for explorers everywhere.</span>
           </div>
-          <p className="text-sm">© 2025 Travel360. All rights reserved.</p>
         </div>
       </footer>
     </div>
