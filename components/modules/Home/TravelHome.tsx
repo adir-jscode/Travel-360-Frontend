@@ -1,8 +1,8 @@
 import PublicFooter from "@/components/shared/PublicFooter";
-import { ArrowRight, Compass, Mountain, Plane, Users } from "lucide-react";
+import { ArrowRight, Mountain } from "lucide-react";
 import { DestinationCard } from "./DestinationCard";
 import { Hero } from "./Hero";
-import { HowItWorksStep } from "./HowItWorksStep";
+import { HowItWorks } from "./HowItWorksStep";
 import { TripCard } from "./TripCard";
 export function TravelHome() {
   const destinations = [
@@ -123,39 +123,9 @@ export function TravelHome() {
       </section>
 
       {/* How It Works Section */}
-      <section className="bg-white py-24 px-4 md:px-8 lg:px-12">
-        <div className="mx-auto max-w-7xl">
-          <div className="mb-16 text-center">
-            <h2 className="mb-4 text-4xl font-black text-gray-900 md:text-5xl">
-              How It Works
-            </h2>
-            <p className="mx-auto max-w-2xl text-xl text-gray-600">
-              Start your journey in three simple steps.
-            </p>
-          </div>
 
-          <div className="grid grid-cols-1 gap-12 md:grid-cols-3">
-            <HowItWorksStep
-              stepNumber={1}
-              icon={Users}
-              title="Create Profile"
-              description="Build your traveler profile, share your interests, and set your travel preferences."
-            />
-            <HowItWorksStep
-              stepNumber={2}
-              icon={Compass}
-              title="Find Matches"
-              description="Connect with like-minded travelers or join existing group trips to your dream destinations."
-            />
-            <HowItWorksStep
-              stepNumber={3}
-              icon={Plane}
-              title="Start Adventure"
-              description="Pack your bags, meet your new travel buddies, and explore the world together."
-            />
-          </div>
-        </div>
-      </section>
+      <HowItWorks />
+      {/* <TopTravelers /> */}
 
       {/* Upcoming Trips Section */}
       <section className="bg-gray-50 py-20 px-4 md:px-8 lg:px-12">

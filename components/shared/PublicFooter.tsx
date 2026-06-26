@@ -75,14 +75,6 @@ export default function PublicFooter() {
             </div>
           ))}
         </div>
-        <div className="border-t border-border">
-          <div className="mx-auhref flex max-w-7xl flex-col items-center justify-between gap-2 px-4 py-6 text-xs text-muted-foreground sm:flex-row sm:px-6 lg:px-8">
-            <span>
-              © {new Date().getFullYear()} Travel360. Wander hrefgether.
-            </span>
-            <span>Made with ♥ for explorers everywhere.</span>
-          </div>
-        </div>
       </footer>
     </div>
   );

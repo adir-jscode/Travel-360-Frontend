@@ -1,5 +1,8 @@
 "use client";
 
+import { credentialLogin } from "@/services/auth/credentialLogin";
+import Link from "next/link";
+import { useActionState } from "react";
 import { Button } from "./ui/button";
 import {
   Card,
@@ -12,6 +15,8 @@ import { Field, FieldDescription, FieldGroup, FieldLabel } from "./ui/field";
 import { Input } from "./ui/input";
 
 export default function LoginForm() {
+  const [state, formAction, isPending] = useActionState(credentialLogin, null);
+  console.log(state);
   return (
     <div>
       <Card>
@@ -22,13 +27,14 @@ export default function LoginForm() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form>
+          <form action={formAction}>
             <FieldGroup>
               <Field>
                 <FieldLabel htmlFor="email">Email</FieldLabel>
                 <Input
                   id="email"
                   type="email"
+                  name="email"
                   placeholder="m@example.com"
                   required
                 />
@@ -43,15 +49,18 @@ export default function LoginForm() {
                     Forgot your password?
                   </a>
                 </div>
-                <Input id="password" type="password" required />
+                <Input id="password" name="password" type="password" required />
               </Field>
               <Field>
-                <Button type="submit">Login</Button>
+                <Button type="submit" disabled={isPending}>
+                  {isPending ? "logging in..." : "Login"}
+                </Button>
                 <Button variant="outline" type="button">
                   Login with Google
                 </Button>
                 <FieldDescription className="text-center">
-                  Don&apos;t have an account? <a href="#">Sign up</a>
+                  Don&apos;t have an account?{" "}
+                  <Link href="/register">Sign up</Link>
                 </FieldDescription>
               </Field>
             </FieldGroup>

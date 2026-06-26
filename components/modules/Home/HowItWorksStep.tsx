@@ -1,29 +1,60 @@
+import { SectionHeader } from "@/components/shared/SectionHeader";
+import { Compass, LucideIcon, Plane, Users } from "lucide-react";
 interface HowItWorksStepProps {
-  icon: BoxIcon;
+  icon: LucideIcon;
   title: string;
   description: string;
   stepNumber: number;
 }
-export function HowItWorksStep({
-  icon: Icon,
-  title,
-  description,
-  stepNumber,
-}: HowItWorksStepProps) {
+export function HowItWorks() {
+  const steps: HowItWorksStepProps[] = [
+    {
+      icon: Users,
+      title: "Create your profile",
+      description:
+        "Tell us about your travel style, interests, and dream destinations.",
+      stepNumber: 1,
+    },
+    {
+      icon: Plane,
+      title: "Share a travel plan",
+      description: "Post your upcoming trip with dates, budget, and itinerary.",
+      stepNumber: 2,
+    },
+    {
+      icon: Compass,
+      title: "Find your buddy",
+      description:
+        "Match with compatible travelers and start planning together.",
+      stepNumber: 3,
+    },
+  ];
   return (
-    <div className="group relative flex flex-col items-center text-center">
-      {/* Connector Line (hidden on mobile/last item) */}
-      <div className="absolute top-12 left-1/2 -z-10 hidden h-1 w-full -translate-y-1/2 bg-gray-200 lg:block last:hidden" />
-
-      <div className="relative mb-6 flex h-24 w-24 items-center justify-center rounded-full bg-linear-to-br from-orange-100 to-pink-100 shadow-inner transition-transform duration-300 group-hover:scale-110 group-hover:from-orange-200 group-hover:to-pink-200">
-        <Icon className="h-10 w-10 text-orange-600 transition-colors group-hover:text-pink-600" />
-        <div className="absolute -right-2 -top-2 flex h-8 w-8 items-center justify-center rounded-full bg-blue-600 text-sm font-bold text-white shadow-md">
-          {stepNumber}
+    <section className="bg-secondary/40 py-20">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <SectionHeader
+          eyebrow="How it works"
+          title="Three steps to your next trip"
+          subtitle="From signup to boarding pass in minutes."
+        />
+        <div className="mt-12 grid gap-6 md:grid-cols-3">
+          {steps.map((s, i) => (
+            <div
+              key={s.title}
+              className="relative rounded-3xl border border-border bg-card p-8 shadow-soft"
+            >
+              <div className="absolute -top-4 left-8 inline-flex h-9 items-center rounded-full bg-gradient-sunset px-4 text-xs font-black uppercase tracking-wider text-white shadow-glow">
+                Step {i + 1}
+              </div>
+              <s.icon className="h-10 w-10 text-primary" />
+              <h3 className="mt-4 text-xl font-bold">{s.title}</h3>
+              <p className="mt-2 text-sm text-muted-foreground">
+                {s.description}
+              </p>
+            </div>
+          ))}
         </div>
       </div>
-
-      <h3 className="mb-3 text-2xl font-extrabold text-gray-900">{title}</h3>
-      <p className="max-w-xs text-gray-600 leading-relaxed">{description}</p>
-    </div>
+    </section>
   );
 }

@@ -5,8 +5,9 @@ import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "../ui/sheet";
 
 const PublicNavbar = () => {
   const navItems = [
-    { href: "#", label: "Explore Travelers" },
+    { href: "/explore", label: "Explore Travelers" },
     { href: "#", label: "Find Travel Buddy" },
+    { href: "/pricing", label: "Pricing" },
   ];
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur  dark:bg-background/95">

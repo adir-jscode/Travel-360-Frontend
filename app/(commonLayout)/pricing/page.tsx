@@ -12,7 +12,7 @@ const plans = [
     description: "Browse and connect with the community.",
     features: [
       "Browse travelers",
-      "3 travel plans",
+      "1 travel plans",
       "Basic matching",
       "Community support",
     ],
@@ -25,11 +25,12 @@ const plans = [
     period: "per month",
     description: "For travelers who plan multiple trips a year.",
     features: [
-      "Unlimited travel plans",
+      "Build Unlimited Travel Plans",
+      "AI Travel Plans with detail itinerary",
       "Smart matching",
-      "Verified badge",
+      // "Verified badge",
       "Priority in search",
-      "Group itinerary tools",
+      // "Group itinerary tools",
     ],
     cta: "Start 7-day trial",
     featured: true,
@@ -67,8 +68,7 @@ export default function PricingPage() {
           </h1>
 
           <p className="mt-6 text-lg text-muted-foreground">
-            Start free. Upgrade when you are ready for unlimited matches and a
-            verified badge.
+            Start free. Upgrade when you are ready for unlimited matches.
           </p>
         </div>
 
