@@ -1,13 +1,16 @@
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
+export { auth } from "@/auth";
 const authRoutes = ["/login", "/register", "/forgot-password"];
 
 const adminRoutes = [/^\/admin/];
 const userRoutes = [/^\/user/];
 const commonProtectedRoutes = [
+  "/dashboard",
   "/my-profile",
   "/change-password",
   "/reset-password",
+  "/pricing",
 ];
 
 function isAuthRoute(pathname: string): boolean {
@@ -56,5 +59,14 @@ export function proxy(request: NextRequest) {
 // export default function proxy(request: NextRequest) { ... }
 
 export const config = {
-  matcher: "/pricing",
+  matcher: [
+    /*
+     * Match all request paths except for the ones starting with:
+     * - api (API routes)
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - favicon.ico, sitemap.xml, robots.txt (metadata files)
+     */
+    "/((?!api|_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt|.well-known).*)",
+  ],
 };

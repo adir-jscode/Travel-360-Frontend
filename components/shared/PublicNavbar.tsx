@@ -1,9 +1,14 @@
+import { auth } from "@/auth";
 import { Menu, Plane } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { Button } from "../ui/button";
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "../ui/sheet";
+import Signout from "./Signout";
 
-const PublicNavbar = () => {
+const PublicNavbar = async () => {
+  const session = await auth();
+
   const navItems = [
     { href: "/explore", label: "Explore Travelers" },
     { href: "#", label: "Find Travel Buddy" },
@@ -29,14 +34,28 @@ const PublicNavbar = () => {
           ))}
         </nav>
 
-        <div className="hidden md:flex items-center space-x-2">
-          <Link href="/login" className="text-lg font-medium">
-            <Button variant={"secondary"}>Login</Button>
-          </Link>
-          <Link href="/register" className="text-lg font-medium">
-            <Button>Register</Button>
-          </Link>
-        </div>
+        {session?.user ? (
+          <div className="flex gap-4">
+            <p className="text-bold-500">{session?.user?.name}</p>
+            <Image
+              src={session?.user?.image as string}
+              alt={session?.user?.name as string}
+              width={32}
+              height={32}
+              className="rounded-full"
+            />
+            <Signout />
+          </div>
+        ) : (
+          <div className="hidden md:flex items-center space-x-2">
+            <Link href="/login" className="text-lg font-medium">
+              <Button variant={"secondary"}>Login</Button>
+            </Link>
+            <Link href="/register" className="text-lg font-medium">
+              <Button>Register</Button>
+            </Link>
+          </div>
+        )}
 
         {/* Mobile Menu */}
 
@@ -60,15 +79,21 @@ const PublicNavbar = () => {
                     {link.label}
                   </Link>
                 ))}
-                <div className="border-t pt-4 flex flex-col space-y-4">
-                  <div className="flex justify-center"></div>
-                  <Link href="/login" className="text-lg font-medium">
-                    <Button>Login</Button>
-                  </Link>
-                  <Link href="/register" className="text-lg font-medium">
-                    <Button>Register</Button>
-                  </Link>
-                </div>
+                {session?.user ? (
+                  <div>
+                    <p>{session?.user?.name}</p>
+                  </div>
+                ) : (
+                  <div className="border-t pt-4 flex flex-col space-y-4">
+                    <div className="flex justify-center"></div>
+                    <Link href="/login" className="text-lg font-medium">
+                      <Button>Login</Button>
+                    </Link>
+                    <Link href="/register" className="text-lg font-medium">
+                      <Button>Register</Button>
+                    </Link>
+                  </div>
+                )}
               </nav>
             </SheetContent>
           </Sheet>

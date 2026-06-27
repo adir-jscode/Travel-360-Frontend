@@ -1,12 +1,6 @@
 "use client";
-
 import { Button } from "@/components/ui/button";
-import {
-  Field,
-  FieldDescription,
-  FieldGroup,
-  FieldLabel,
-} from "@/components/ui/field";
+import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 
 import { loginUser } from "@/services/auth/loginUser";
@@ -116,26 +110,25 @@ export default function LoginForm({ redirect }: LoginFormProps) {
             )}
           </Button>
 
-          <div className="relative my-4">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-border" />
-            </div>
-            <div className="relative flex justify-center text-xs">
-              <span className="bg-background px-2 text-muted-foreground">
-                or
-              </span>
-            </div>
-          </div>
-
-          <FieldDescription className="text-center text-sm text-muted-foreground">
-            Don&apos;t have an account?{" "}
-            <Link
-              href="/register"
-              className="text-primary hover:underline underline-offset-4 font-semibold"
+          {/* <Field>
+            <Button
+              type="submit"
+              className="w-full h-11 font-semibold text-base"
+              disabled={isPending}
             >
-              Create one free
-            </Link>
-          </FieldDescription>
+              {isPending ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Signing in...
+                </>
+              ) : (
+                <div className="flex gap-6">
+                  <FaGoogle />
+                  <Signin />
+                </div>
+              )}
+            </Button>
+          </Field> */}
         </Field>
       </FieldGroup>
     </form>

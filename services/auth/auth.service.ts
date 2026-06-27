@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use server";
-
+import { signIn as googleSignIn, signOut as googleSignout } from "@/auth";
 import { verifyAccessToken } from "@/lib/jwtHandlers";
 import { serverFetch } from "@/lib/server-fetch";
 import { zodValidator } from "@/lib/zodValidator";
@@ -103,6 +103,12 @@ export async function logoutUser() {
     await deleteCookie("refreshToken");
   }
   return { success: true };
+}
+export async function signOut() {
+  await googleSignout();
+}
+export async function signIn() {
+  await googleSignIn("google", { callbackUrl: "http://localhost:3000" });
 }
 
 export async function forgotPassword(_prevState: any, formData: FormData) {

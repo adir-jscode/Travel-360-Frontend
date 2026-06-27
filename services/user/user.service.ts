@@ -43,12 +43,13 @@ export async function updateMyProfile(
     if (file && file instanceof File && file.size > 0) {
       uploadFormData.append("file", file);
     }
-
+    console.log({ uploadFormData });
     const response = await serverFetch.patch("/user/profile", {
       body: uploadFormData,
     });
 
     const result = await response.json();
+    console.log({ result });
 
     if (result.success) {
       revalidateTag("user-info", "max");

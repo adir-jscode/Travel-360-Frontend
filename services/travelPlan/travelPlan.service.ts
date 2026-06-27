@@ -13,7 +13,9 @@ import { revalidateTag } from "next/cache";
 
 export async function getAllTravelPlans(query?: string): Promise<any> {
   try {
-    const endpoint = query ? `/travel-plans?${query}` : "/travel-plans";
+    const endpoint = query
+      ? `/travel-plan/travel-plans?${query}`
+      : "/travel-plan/travel-plans";
     const response = await serverFetch.get(endpoint, {
       next: { tags: ["travel-plans"] },
     });
@@ -47,7 +49,7 @@ export async function createTravelPlan(
       return { success: false, errors: validated.errors };
     }
 
-    const response = await serverFetch.post("/travel-plans", {
+    const response = await serverFetch.post("travel-plan/travel-plans", {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(validated.data),
     });
@@ -66,6 +68,7 @@ export async function updateTravelPlan(
   formData: FormData,
 ): Promise<any> {
   try {
+    console.log({ id });
     const raw: Record<string, any> = {};
 
     formData.forEach((value, key) => {
@@ -87,16 +90,21 @@ export async function updateTravelPlan(
     });
 
     const validated = zodValidator(raw, updateTravelPlanZodSchema);
+    console.log({ validated });
     if (!validated.success) {
       return { success: false, errors: validated.errors };
     }
 
-    const response = await serverFetch.patch(`/travel-plans/${id}`, {
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(validated.data),
-    });
+    const response = await serverFetch.patch(
+      `/travel-plan/travel-plans/${id}`,
+      {
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(validated.data),
+      },
+    );
 
     const result = await response.json();
+    console.log({ result });
     if (result.success) revalidateTag("travel-plans", "max");
     return result;
   } catch (error: any) {
@@ -106,7 +114,7 @@ export async function updateTravelPlan(
 
 export async function deleteTravelPlan(id: string): Promise<any> {
   try {
-    const response = await serverFetch.delete(`/travel-plans/${id}`);
+    const response = await serverFetch.delete(`travel-plan/travel-plans/${id}`);
     const result = await response.json();
     if (result.success) revalidateTag("travel-plans", "max");
     return result;
@@ -118,7 +126,7 @@ export async function deleteTravelPlan(id: string): Promise<any> {
 export async function toggleTravelPlanVisibility(id: string): Promise<any> {
   try {
     const response = await serverFetch.patch(
-      `/travel-plans/${id}/toggle-visibility`,
+      `/travel-plan/travel-plans/${id}/toggle-visibility`,
     );
     const result = await response.json();
     if (result.success) revalidateTag("travel-plans", "max");
@@ -150,7 +158,7 @@ export async function generateAiTravelPlan(
       return { success: false, errors: validated.errors };
     }
 
-    const response = await serverFetch.post("/ai-travel-plans", {
+    const response = await serverFetch.post("/travel-plan/ai-travel-plans", {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(validated.data),
     });
@@ -167,10 +175,11 @@ export async function getTravelPlanById(
   id: string,
 ): Promise<ITravelPlan | null> {
   try {
-    const response = await serverFetch.get(`/travel-plans/${id}`, {
+    const response = await serverFetch.get(`/travel-plan/travel-plans/${id}`, {
       next: { tags: ["travel-plans"] },
     });
     const result = await response.json();
+    console.log(result);
     return result.success ? result.data : null;
   } catch {
     return null;
