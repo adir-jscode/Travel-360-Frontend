@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use server";
-import { signIn as googleSignIn, signOut as googleSignout } from "@/auth";
+import { signIn as nextAuthSignIn, signOut as nextAuthSignOut } from "@/auth";
 import { verifyAccessToken } from "@/lib/jwtHandlers";
 import { serverFetch } from "@/lib/server-fetch";
 import { zodValidator } from "@/lib/zodValidator";
@@ -105,10 +105,23 @@ export async function logoutUser() {
   return { success: true };
 }
 export async function signOut() {
-  await googleSignout();
+  // Clear credential JWT cookies
+  try {
+    await serverFetch.post("/auth/logout", {
+      headers: { "Content-Type": "application/json" },
+    });
+  } catch {
+    // Ignore — backend may not have a credential session
+  } finally {
+    await deleteCookie("accessToken");
+    await deleteCookie("refreshToken");
+  }
+
+  // Sign out of NextAuth (Google session)
+  await nextAuthSignOut({ redirectTo: "/login" });
 }
 export async function signIn() {
-  await googleSignIn("google", { callbackUrl: "http://localhost:3000" });
+  await nextAuthSignIn("google", { redirectTo: "/user/dashboard" });
 }
 
 export async function forgotPassword(_prevState: any, formData: FormData) {
@@ -266,3 +279,33 @@ export async function changePassword(_prevState: any, formData: FormData) {
     };
   }
 }
+// export async function syncGoogleTokensToCookies() {
+//   const session = await auth();
+
+//   if (!session?.accessToken || !session?.refreshToken) return;
+
+//   // Only sync if not already in cookies (avoid unnecessary writes)
+//   const existingAccessToken = await getCookie("accessToken");
+//   if (existingAccessToken) {
+//     const verified = await verifyAccessToken(existingAccessToken);
+//     if (verified.success) return; // already valid, no need to resync
+//   }
+
+//   const cookieStore = await cookies();
+
+//   cookieStore.set("accessToken", session.accessToken, {
+//     httpOnly: true,
+//     secure: process.env.NODE_ENV === "production",
+//     sameSite: "lax",
+//     path: "/",
+//     maxAge: 60 * 60, // 1 hour
+//   });
+
+//   cookieStore.set("refreshToken", session.refreshToken, {
+//     httpOnly: true,
+//     secure: process.env.NODE_ENV === "production",
+//     sameSite: "lax",
+//     path: "/",
+//     maxAge: 60 * 60 * 24 * 90, // 90 days
+//   });
+// }

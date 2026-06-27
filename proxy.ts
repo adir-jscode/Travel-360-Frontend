@@ -1,3 +1,4 @@
+import { auth } from "@/auth";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 export { auth } from "@/auth";
@@ -6,7 +7,6 @@ const authRoutes = ["/login", "/register", "/forgot-password"];
 const adminRoutes = [/^\/admin/];
 const userRoutes = [/^\/user/];
 const commonProtectedRoutes = [
-  "/dashboard",
   "/my-profile",
   "/change-password",
   "/reset-password",
@@ -34,11 +34,17 @@ function isProtectedRoute(pathname: string): boolean {
 }
 
 // This function can be marked `async` if using `await` inside
-export function proxy(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
-  const accessToken = request.cookies.get("accessToken")?.value;
-  const refreshToken = request.cookies.get("refreshToken")?.value;
+  const session = await auth();
+
+  const accessToken =
+    request.cookies.get("accessToken")?.value || session?.accessToken;
+  const refreshToken =
+    request.cookies.get("refreshToken")?.value || session?.refreshToken;
   const isLoggedIn = !!(accessToken || refreshToken);
+  console.log("FROM MIDDLEWARE", { isLoggedIn });
+  console.log({ accessToken, refreshToken });
 
   // Redirect logged-in users away from auth routes
   if (isAuthRoute(pathname) && isLoggedIn) {

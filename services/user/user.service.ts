@@ -93,6 +93,7 @@ export async function deleteUser(id: string): Promise<any> {
 }
 
 export async function getUserProfile(id?: string): Promise<IUser | null> {
+  console.log(id);
   try {
     const endpoint = id ? `/user/profile/${id}` : "/user/profile";
     const response = await serverFetch.get(endpoint, {

@@ -109,26 +109,6 @@ export default function LoginForm({ redirect }: LoginFormProps) {
               "Sign in"
             )}
           </Button>
-
-          {/* <Field>
-            <Button
-              type="submit"
-              className="w-full h-11 font-semibold text-base"
-              disabled={isPending}
-            >
-              {isPending ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Signing in...
-                </>
-              ) : (
-                <div className="flex gap-6">
-                  <FaGoogle />
-                  <Signin />
-                </div>
-              )}
-            </Button>
-          </Field> */}
         </Field>
       </FieldGroup>
     </form>

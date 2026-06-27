@@ -24,7 +24,7 @@ export default function Signin() {
           hover:shadow-md
         "
       >
-        <FaGoogle className="mr-3 h-4 w-4 text-[#DB4437]" />
+        <FaGoogle className="mr-3 h-4 w-4 text-[#000000]" />
         Continue with Google
       </Button>
     </form>
