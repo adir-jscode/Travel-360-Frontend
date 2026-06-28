@@ -72,10 +72,11 @@ export function useNotifications(userId?: string) {
   const fetchRequests = useCallback(async () => {
     // FIX 1: Guard was already here — but now userId is actually passed in
     // from NotificationBell, so this will run correctly.
+    console.log({ userId });
     if (!userId) return;
     setLoading(true);
     try {
-      const res = await fetch("/api/join-request/incoming", {
+      const res = await fetch("/api/join-requests/incoming", {
         cache: "no-store",
         // FIX 2: Browser fetch from a client component automatically sends
         // cookies, so credentials: "include" ensures the auth cookie is sent.
