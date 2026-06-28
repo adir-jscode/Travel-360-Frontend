@@ -279,33 +279,28 @@ export async function changePassword(_prevState: any, formData: FormData) {
     };
   }
 }
-// export async function syncGoogleTokensToCookies() {
-//   const session = await auth();
-
-//   if (!session?.accessToken || !session?.refreshToken) return;
-
-//   // Only sync if not already in cookies (avoid unnecessary writes)
-//   const existingAccessToken = await getCookie("accessToken");
-//   if (existingAccessToken) {
-//     const verified = await verifyAccessToken(existingAccessToken);
-//     if (verified.success) return; // already valid, no need to resync
-//   }
-
-//   const cookieStore = await cookies();
-
-//   cookieStore.set("accessToken", session.accessToken, {
-//     httpOnly: true,
-//     secure: process.env.NODE_ENV === "production",
-//     sameSite: "lax",
-//     path: "/",
-//     maxAge: 60 * 60, // 1 hour
-//   });
-
-//   cookieStore.set("refreshToken", session.refreshToken, {
-//     httpOnly: true,
-//     secure: process.env.NODE_ENV === "production",
-//     sameSite: "lax",
-//     path: "/",
-//     maxAge: 60 * 60 * 24 * 90, // 90 days
-//   });
-// }
+export async function syncGoogleTokensToCookies() {
+  // const session = await auth();
+  // if (!session?.accessToken || !session?.refreshToken) return;
+  // // Only sync if not already in cookies (avoid unnecessary writes)
+  // const existingAccessToken = await getCookie("accessToken");
+  // if (existingAccessToken) {
+  //   const verified = await verifyAccessToken(existingAccessToken);
+  //   if (verified.success) return; // already valid, no need to resync
+  // }
+  // const cookieStore = await cookies();
+  // cookieStore.set("accessToken", session.accessToken, {
+  //   httpOnly: true,
+  //   secure: process.env.NODE_ENV === "production",
+  //   sameSite: "lax",
+  //   path: "/",
+  //   maxAge: 60 * 60, // 1 hour
+  // });
+  // cookieStore.set("refreshToken", session.refreshToken, {
+  //   httpOnly: true,
+  //   secure: process.env.NODE_ENV === "production",
+  //   sameSite: "lax",
+  //   path: "/",
+  //   maxAge: 60 * 60 * 24 * 90, // 90 days
+  // });
+}

@@ -1,8 +1,8 @@
 "use client";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-
 import { loginUser } from "@/services/auth/loginUser";
 import { Eye, EyeOff, Loader2, Lock, Mail } from "lucide-react";
 import Link from "next/link";
@@ -17,10 +17,20 @@ interface LoginFormProps {
 export default function LoginForm({ redirect }: LoginFormProps) {
   const [state, formAction, isPending] = useActionState(loginUser, null);
   const [showPassword, setShowPassword] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const fillCredentials = (type: "USER" | "ADMIN") => {
+    if (type === "USER") {
+      setEmail("user@gmail.com");
+      setPassword("SecurePass123@");
+    } else {
+      setEmail("super@gmail.com");
+      setPassword("Admin.itravel@2026");
+    }
+  };
 
   useEffect(() => {
     if (state && !state.success && state.message) {
-      console.log(state.message);
       toast.error(state.message);
     }
   }, [state]);
@@ -28,7 +38,46 @@ export default function LoginForm({ redirect }: LoginFormProps) {
   return (
     <form action={formAction} className="space-y-5">
       {redirect && <input type="hidden" name="redirect" value={redirect} />}
+      <div className="mb-6 rounded-xl border bg-muted/30 p-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="text-sm font-semibold">Demo Accounts</h3>
+            <p className="text-xs text-muted-foreground mt-1">
+              Click a button to auto-fill the login form.
+            </p>
+          </div>
 
+          <Badge variant="secondary">Demo</Badge>
+        </div>
+
+        <div className="mt-4 grid grid-cols-2 gap-3">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => fillCredentials("USER")}
+            className="h-auto flex-col items-start py-3"
+          >
+            <span className="font-semibold">👤 User</span>
+
+            <span className="text-xs text-muted-foreground">
+              user@gmail.com
+            </span>
+          </Button>
+
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => fillCredentials("ADMIN")}
+            className="h-auto flex-col items-start py-3"
+          >
+            <span className="font-semibold">🛡 Admin</span>
+
+            <span className="text-xs text-muted-foreground">
+              super@gmail.com
+            </span>
+          </Button>
+        </div>
+      </div>
       <FieldGroup>
         {/* Email */}
         <Field>
@@ -47,6 +96,8 @@ export default function LoginForm({ redirect }: LoginFormProps) {
               placeholder="you@example.com"
               className="pl-9"
               autoComplete="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
             />
           </div>
           <InputFieldError field="email" state={state} />
@@ -77,6 +128,8 @@ export default function LoginForm({ redirect }: LoginFormProps) {
               placeholder="Enter your password"
               className="pl-9 pr-9"
               autoComplete="current-password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
             />
             <button
               type="button"

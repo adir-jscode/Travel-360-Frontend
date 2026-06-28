@@ -113,7 +113,7 @@ export function AnalyticsCharts({
           <span className="w-2 h-6 bg-blue-500 rounded-full mr-3"></span>
           Travel Plans Created
         </h3>
-        <div className="h-[300px] w-full">
+        <div className="h-75 w-full">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart
               data={plans}

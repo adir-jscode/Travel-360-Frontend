@@ -1,13 +1,13 @@
 import { ZodTypeAny } from "zod";
 
 export const zodValidator = <T>(payload: T, schema: ZodTypeAny) => {
-  const validatedPayload = schema.safeParse(payload);
+  const result = schema.safeParse(payload);
 
-  if (!validatedPayload.success) {
+  if (!result.success) {
     return {
       success: false as const,
-      errors: validatedPayload.error.issues.map((issue) => ({
-        field: String(issue.path[0] ?? ""),
+      errors: result.error.issues.map((issue) => ({
+        field: issue.path.map(String).join("."),
         message: issue.message,
       })),
       data: undefined,
@@ -16,8 +16,8 @@ export const zodValidator = <T>(payload: T, schema: ZodTypeAny) => {
 
   return {
     success: true as const,
-    errors: undefined,
-    data: validatedPayload.data as T,
+    errors: [],
+    data: result.data,
   };
 };
 
@@ -29,7 +29,9 @@ export const getInputFieldError = (
   } | null,
 ) => {
   if (state && state.errors) {
-    const error = state.errors.find((err) => err.field === fieldName);
+    const error = state.errors.find(
+      (err) => err.field === fieldName || err.field.startsWith(fieldName),
+    );
     return error ? error.message : null;
   }
   return null;

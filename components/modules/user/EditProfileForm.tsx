@@ -120,8 +120,10 @@ export function EditProfileForm({ user }: { user: IUser }) {
             <div className="relative w-24 h-24 rounded-full overflow-hidden border-4 border-background shadow-sm bg-muted flex items-center justify-center">
               {previewImage || user.picture ? (
                 <Image
-                  src={previewImage || user.picture}
+                  src={(previewImage as string) || (user.picture as string)}
                   alt="Profile"
+                  height={300}
+                  width={300}
                   className="w-full h-full object-cover"
                 />
               ) : (

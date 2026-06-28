@@ -1,7 +1,20 @@
 import { auth } from "@/auth";
-
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { getUserInfo } from "@/services/auth/getUserInfo";
-import { Menu, Plane } from "lucide-react";
+import {
+  ChevronDown,
+  LayoutDashboard,
+  Menu,
+  Plane,
+  Settings,
+  User,
+} from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { Button } from "../ui/button";
@@ -16,6 +29,11 @@ const PublicNavbar = async () => {
   // so the rest of the app (serverFetch, middleware) can use them.
   if (session?.accessToken) {
     //await syncGoogleTokensToCookies();
+    await fetch("http://localhost:3000/api/auth/sync-google-tokens", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      cache: "no-store",
+    });
   }
 
   // Credential session (JWT cookies)
@@ -26,6 +44,7 @@ const PublicNavbar = async () => {
     ? {
         name: credentialUser.name,
         picture: credentialUser.picture ?? null,
+        role: credentialUser.role,
         isLoggedIn: true,
       }
     : session?.user
@@ -38,6 +57,7 @@ const PublicNavbar = async () => {
 
   const navItems = [
     { href: "/explore", label: "Explore Travelers" },
+    { href: "/travel-plans", label: "Travel Plans" },
     { href: "#", label: "Find Travel Buddy" },
     { href: "/pricing", label: "Pricing" },
   ];
@@ -65,32 +85,96 @@ const PublicNavbar = async () => {
         </nav>
 
         {/* Desktop Auth Area */}
-        {displayUser ? (
-          <div className="hidden md:flex items-center gap-3">
-            {displayUser.picture && (
-              <Image
-                src={displayUser.picture}
-                alt={displayUser.name}
-                width={32}
-                height={32}
-                className="rounded-full ring-2 ring-primary/20"
-              />
-            )}
-            <span className="text-sm font-medium text-foreground truncate max-w-30">
-              {displayUser.name}
-            </span>
-            <Signout />
-          </div>
-        ) : (
-          <div className="hidden md:flex items-center space-x-2">
-            <Link href="/login" className="text-lg font-medium">
-              <Button variant="secondary">Login</Button>
-            </Link>
-            <Link href="/register" className="text-lg font-medium">
-              <Button>Register</Button>
-            </Link>
-          </div>
-        )}
+        <div className="hidden md:flex items-center gap-3">
+          {displayUser ? (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  className="flex h-10 items-center gap-2 rounded-full px-2"
+                >
+                  {displayUser.picture ? (
+                    <Image
+                      src={displayUser.picture}
+                      alt={displayUser.name}
+                      width={26}
+                      height={26}
+                      className="rounded-full"
+                    />
+                  ) : (
+                    <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary text-white">
+                      {displayUser.name.charAt(0)}
+                    </div>
+                  )}
+
+                  <span className="max-w-30 truncate font-medium">
+                    {displayUser.name}
+                  </span>
+
+                  <ChevronDown className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+
+              <DropdownMenuContent align="end" className="w-60">
+                <div className="px-3 py-2">
+                  <p className="font-semibold">{displayUser.name}</p>
+
+                  <p className="text-xs text-muted-foreground">
+                    {displayUser.role}
+                  </p>
+                </div>
+
+                <DropdownMenuSeparator />
+
+                <DropdownMenuItem asChild>
+                  <Link
+                    href={
+                      displayUser.role === "ADMIN" ||
+                      displayUser.role === "SUPER_ADMIN"
+                        ? "/admin/dashboard"
+                        : "/user/dashboard"
+                    }
+                  >
+                    <LayoutDashboard className="mr-2 h-4 w-4" />
+                    Dashboard
+                  </Link>
+                </DropdownMenuItem>
+
+                <DropdownMenuItem asChild>
+                  <Link href="/user/dashboard/my-profile">
+                    <User className="mr-2 h-4 w-4" />
+                    My Profile
+                  </Link>
+                </DropdownMenuItem>
+
+                <DropdownMenuItem asChild>
+                  <Link href="/change-password">
+                    <Settings className="mr-2 h-4 w-4" />
+                    Change Password
+                  </Link>
+                </DropdownMenuItem>
+
+                <DropdownMenuSeparator />
+
+                <div className="p-2">
+                  <Signout />
+                </div>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ) : (
+            <div className="flex items-center gap-2">
+              <Link href="/login">
+                <Button size="sm">Login</Button>
+              </Link>
+
+              <Link href="/register">
+                <Button size="sm" variant="outline">
+                  Register
+                </Button>
+              </Link>
+            </div>
+          )}
+        </div>
 
         {/* Mobile Menu */}
         <div className="md:hidden">
@@ -115,7 +199,14 @@ const PublicNavbar = async () => {
 
                 {displayUser ? (
                   <div className="border-t pt-4 flex flex-col gap-3">
-                    <div className="flex items-center gap-2">
+                    <Link
+                      href={
+                        displayUser.role === "USER"
+                          ? "/user/dashboard"
+                          : "/admin/dashboard"
+                      }
+                      className="flex items-center gap-2"
+                    >
                       {displayUser.picture && (
                         <Image
                           src={displayUser.picture}
@@ -125,8 +216,10 @@ const PublicNavbar = async () => {
                           className="rounded-full"
                         />
                       )}
+
                       <p className="font-medium text-sm">{displayUser.name}</p>
-                    </div>
+                    </Link>
+
                     <Signout />
                   </div>
                 ) : (

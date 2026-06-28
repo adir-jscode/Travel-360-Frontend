@@ -24,37 +24,61 @@ export async function getAllTravelPlans(query?: string): Promise<any> {
     return { success: false, message: error.message };
   }
 }
+export async function getMyTravelPlans(query?: string): Promise<any> {
+  try {
+    const endpoint = query
+      ? `/travel-plan/my-travel-plans?${query}`
+      : "/travel-plan/my-travel-plans";
+    const response = await serverFetch.get(endpoint, {
+      next: { tags: ["travel-plans"] },
+    });
+    return await response.json();
+  } catch (error: any) {
+    return { success: false, message: error.message };
+  }
+}
 
 export async function createTravelPlan(
   _prevState: any,
   formData: FormData,
 ): Promise<any> {
   try {
+    console.log({ formData });
+    const days = Number(formData.get("days"));
+    const itinerary = JSON.parse((formData.get("itinerary") as string) || "[]");
+    const budgetMin = formData.get("budgetMin") as string;
+    const budgetMax = formData.get("budgetMax") as string;
+
     const payload = {
       destination: {
         country: formData.get("destination.country") as string,
         city: (formData.get("destination.city") as string) || undefined,
       },
-      days: parseInt(formData.get("days") as string),
+      days: days,
       startDate: formData.get("startDate") as string,
       endDate: formData.get("endDate") as string,
-      budgetMin: parseFloat(formData.get("budgetMin") as string),
-      budgetMax: parseFloat(formData.get("budgetMax") as string),
+      budgetMin: budgetMin.trim() === "" ? undefined : Number(budgetMin),
+      budgetMax: budgetMax.trim() === "" ? undefined : Number(budgetMax),
       travelType: formData.get("travelType") as string,
       visibility: formData.get("visibility") as string,
+      itinerary: itinerary,
     };
+    console.log(payload);
 
     const validated = zodValidator(payload, createTravelPlanZodSchema);
+    console.log({ validated });
     if (!validated.success) {
       return { success: false, errors: validated.errors };
     }
+    console.log({ validated });
 
-    const response = await serverFetch.post("travel-plan/travel-plans", {
+    const response = await serverFetch.post("/travel-plan/travel-plans", {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(validated.data),
     });
 
     const result = await response.json();
+    console.log({ result });
     if (result.success) revalidateTag("travel-plans", "max");
     return result;
   } catch (error: any) {
@@ -68,47 +92,60 @@ export async function updateTravelPlan(
   formData: FormData,
 ): Promise<any> {
   try {
-    console.log({ id });
-    const raw: Record<string, any> = {};
+    const itinerary = JSON.parse((formData.get("itinerary") as string) || "[]");
 
-    formData.forEach((value, key) => {
-      if (value !== "" && value !== null) {
-        if (key.startsWith("destination.")) {
-          const field = key.split(".")[1];
-          raw.destination = raw.destination || {};
-          raw.destination[field] = value;
-        } else if (
-          key === "days" ||
-          key === "budgetMin" ||
-          key === "budgetMax"
-        ) {
-          raw[key] = parseFloat(value as string);
-        } else {
-          raw[key] = value;
-        }
-      }
-    });
+    const payload = {
+      destination: {
+        country: (formData.get("destination.country") as string)?.trim(),
+        city: (formData.get("destination.city") as string)?.trim() || undefined,
+      },
 
-    const validated = zodValidator(raw, updateTravelPlanZodSchema);
-    console.log({ validated });
+      startDate: formData.get("startDate") as string,
+      endDate: formData.get("endDate") as string,
+
+      days: Number(formData.get("days")),
+
+      budgetMin: Number(formData.get("budgetMin")),
+      budgetMax: Number(formData.get("budgetMax")),
+
+      travelType: formData.get("travelType") as string,
+      visibility: formData.get("visibility") as string,
+
+      itinerary,
+    };
+
+    const validated = zodValidator(payload, updateTravelPlanZodSchema);
+
     if (!validated.success) {
-      return { success: false, errors: validated.errors };
+      return {
+        success: false,
+        errors: validated.errors,
+      };
     }
 
     const response = await serverFetch.patch(
       `/travel-plan/travel-plans/${id}`,
       {
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify(validated.data),
       },
     );
 
     const result = await response.json();
-    console.log({ result });
-    if (result.success) revalidateTag("travel-plans", "max");
+
+    if (result.success) {
+      revalidateTag("travel-plans", "max");
+      revalidateTag(`travel-plan-${id}`, "max");
+    }
+
     return result;
   } catch (error: any) {
-    return { success: false, message: error.message };
+    return {
+      success: false,
+      message: error.message,
+    };
   }
 }
 
@@ -141,17 +178,24 @@ export async function generateAiTravelPlan(
   formData: FormData,
 ): Promise<any> {
   try {
+    const startDate = new Date(formData.get("startDate") as string);
+    const endDate = new Date(formData.get("endDate") as string);
+    const timeDifference: number = endDate.getTime() - startDate.getTime();
+
+    const daysDifference: number = timeDifference / (1000 * 60 * 60 * 24);
+
     const payload = {
       destination: {
         country: formData.get("destination.country") as string,
         city: (formData.get("destination.city") as string) || undefined,
       },
-      days: parseInt(formData.get("days") as string),
+      days: daysDifference,
       startDate: formData.get("startDate") as string,
       endDate: formData.get("endDate") as string,
       travelType: formData.get("travelType") as string,
       visibility: formData.get("visibility") as string,
     };
+    console.log({ payload });
 
     const validated = zodValidator(payload, createAiTravelPlanZodSchema);
     if (!validated.success) {
@@ -179,7 +223,7 @@ export async function getTravelPlanById(
       next: { tags: ["travel-plans"] },
     });
     const result = await response.json();
-    console.log(result);
+
     return result.success ? result.data : null;
   } catch {
     return null;

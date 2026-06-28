@@ -5,7 +5,6 @@ import { NextResponse } from "next/server";
 export async function POST() {
   try {
     const session = await auth();
-    console.log("FROM POST API", session);
 
     if (!session?.accessToken || !session?.refreshToken) {
       return NextResponse.json(
@@ -39,7 +38,7 @@ export async function POST() {
     response.cookies.set("accessToken", session.accessToken, {
       httpOnly: true,
       secure: true,
-      sameSite: "lax",
+      // sameSite: "lax",
       path: "/",
       maxAge: 60 * 60,
     });
@@ -47,7 +46,7 @@ export async function POST() {
     response.cookies.set("refreshToken", session.refreshToken, {
       httpOnly: true,
       secure: true,
-      sameSite: "lax",
+      // sameSite: "lax",
       path: "/",
       maxAge: 60 * 60 * 24 * 90,
     });

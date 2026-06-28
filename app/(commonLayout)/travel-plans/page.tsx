@@ -1,9 +1,8 @@
-import { TravelPlanCard } from "@/components/modules/travelPlan/TravelPlanCard";
+import { TravelPlanSearch } from "@/components/modules/travelPlan/TravelPlanSearch";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
 import { getAllTravelPlans } from "@/services/travelPlan/travelPlan.service";
 import { ITravelPlan } from "@/types/travelPlan.types";
-import { MapPin, Search } from "lucide-react";
+import { Compass, MapPin, Sparkles } from "lucide-react";
 import Image from "next/image";
 
 export default async function TravelPlansExplorePage() {
@@ -11,73 +10,72 @@ export default async function TravelPlansExplorePage() {
   const plans: ITravelPlan[] = result?.success ? result.data : [];
 
   return (
-    <main className="min-h-screen bg-background pb-20">
-      {/* Hero Section */}
+    <main className="min-h-screen bg-background pb-24">
+      {/* ── Hero ─────────────────────────────────────────────── */}
       <section className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-black/60 z-10" />
-        <Image
-          src="https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?auto=format&fit=crop&w=2000&q=80"
-          alt="Travel Plans"
-          width={1920}
-          height={600}
-          className="h-112.5 w-full object-cover"
-        />
+        {/* Background image */}
+        <div className="absolute inset-0">
+          <Image
+            src="https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?auto=format&fit=crop&w=2000&q=80"
+            alt="World travel"
+            fill
+            priority
+            className="object-cover"
+          />
+          {/* Layered gradient overlay */}
+          <div className="absolute inset-0 bg-linear-to-b from-black/70 via-black/50 to-background" />
+          <div className="absolute inset-0 bg-linear-to-r from-primary/30 via-transparent to-ocean/20 mix-blend-color" />
+        </div>
 
-        <div className="absolute inset-0 z-20 flex flex-col justify-center items-center text-center px-4">
-          <Badge className="mb-4 bg-white/20 hover:bg-white/30 text-white border-white/30 backdrop-blur-md">
-            <MapPin className="w-3.5 h-3.5 mr-1" />
-            Discover the World
-          </Badge>
-          <h1 className="text-4xl md:text-6xl font-bold text-white max-w-3xl leading-tight">
-            Explore Curated{" "}
-            <span className="text-transparent bg-clip-text bg-linear-to-r from-teal-300 to-emerald-300">
-              Travel Plans
-            </span>
-          </h1>
-          <p className="mt-6 text-lg text-white/80 max-w-2xl mx-auto font-light">
-            Find inspiration for your next adventure. Browse public itineraries
-            created by our community and AI, and start packing.
-          </p>
+        {/* Floating decorative elements */}
+        <div className="absolute top-16 left-10 w-64 h-64 rounded-full bg-primary/10 blur-3xl" />
+        <div className="absolute bottom-10 right-10 w-96 h-96 rounded-full bg-ocean/10 blur-3xl" />
+
+        <div className="relative z-10 container mx-auto px-4 pt-20 pb-40">
+          {/* Eyebrow */}
+          <div className="flex justify-center mb-6">
+            <Badge className="bg-white/15 text-white border-white/25 backdrop-blur-md px-4 py-1.5 text-xs font-semibold tracking-wide">
+              <Compass className="w-3.5 h-3.5 mr-1.5" />
+              Community Itineraries
+            </Badge>
+          </div>
+
+          {/* Headline */}
+          <div className="text-center max-w-4xl mx-auto">
+            <h1 className="text-5xl md:text-7xl font-bold text-white leading-[1.05] tracking-tight">
+              Find your next
+              <br />
+              <span className="text-gradient-sunset">adventure</span>
+            </h1>
+            <p className="mt-6 text-lg md:text-xl text-white/70 max-w-2xl mx-auto font-light leading-relaxed">
+              Browse real itineraries from real travelers. Filter by destination
+              and dates to find a plan that matches your dream trip.
+            </p>
+
+            {/* Stats strip */}
+            <div className="mt-10 flex items-center justify-center gap-8 text-white/60 text-sm">
+              <div className="flex items-center gap-2">
+                <MapPin className="w-4 h-4 text-primary" />
+                <span>
+                  <strong className="text-white font-semibold">
+                    {plans.length}+
+                  </strong>{" "}
+                  public plans
+                </span>
+              </div>
+              <div className="w-px h-4 bg-white/20" />
+              <div className="flex items-center gap-2">
+                <Sparkles className="w-4 h-4 text-amber-400" />
+                <span>AI-powered & human-crafted</span>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
-      {/* Content Section */}
-      <section className="container mx-auto px-4 -mt-16 relative z-30">
-        {/* Results Info */}
-        <div className="bg-card/90 backdrop-blur-xl border shadow-xl rounded-2xl p-6 mb-12 flex flex-col md:flex-row justify-between items-center gap-4">
-          <div>
-            <h2 className="text-xl font-bold">Public Itineraries</h2>
-            <p className="text-sm text-muted-foreground">
-              Showing {plans.length} available travel plans
-            </p>
-          </div>
-        </div>
-
-        {/* Grid */}
-        {plans.length === 0 ? (
-          <Card className="border-dashed bg-muted/30">
-            <CardContent className="flex flex-col items-center justify-center py-24 text-center">
-              <Search className="w-12 h-12 text-muted-foreground mb-4 opacity-20" />
-              <h3 className="text-2xl font-semibold mb-2">
-                No travel plans found
-              </h3>
-              <p className="text-muted-foreground max-w-sm">
-                There are no public travel plans available right now. Be the
-                first to create one!
-              </p>
-            </CardContent>
-          </Card>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {plans.map((plan) => (
-              <TravelPlanCard
-                key={plan._id}
-                plan={plan}
-                href={`/travel-plans/${plan._id}`}
-              />
-            ))}
-          </div>
-        )}
+      {/* ── Search + Results ──────────────────────────────────── */}
+      <section className="container mx-auto px-4 -mt-20 relative z-20">
+        <TravelPlanSearch initialPlans={plans} />
       </section>
     </main>
   );

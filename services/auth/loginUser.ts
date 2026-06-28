@@ -13,7 +13,6 @@ import { parse } from "cookie";
 import jwt from "jsonwebtoken";
 import { redirect } from "next/navigation";
 import { setCookie } from "./tokenHandlers";
-
 export const loginUser = async (
   _currentState: any,
   formData: FormData,

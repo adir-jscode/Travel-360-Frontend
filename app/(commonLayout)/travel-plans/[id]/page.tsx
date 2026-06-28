@@ -20,7 +20,6 @@ export default async function TravelPlanDetailPage({
 }) {
   const { id } = await params;
   const plan = await getTravelPlanById(id);
-  console.log({ plan });
 
   if (!plan) {
     return notFound();

@@ -43,13 +43,12 @@ export async function updateMyProfile(
     if (file && file instanceof File && file.size > 0) {
       uploadFormData.append("file", file);
     }
-    console.log({ uploadFormData });
     const response = await serverFetch.patch("/user/profile", {
       body: uploadFormData,
     });
 
     const result = await response.json();
-    console.log({ result });
+    console.log({ result, uploadFormData });
 
     if (result.success) {
       revalidateTag("user-info", "max");
@@ -93,9 +92,8 @@ export async function deleteUser(id: string): Promise<any> {
 }
 
 export async function getUserProfile(id?: string): Promise<IUser | null> {
-  console.log(id);
   try {
-    const endpoint = id ? `/user/profile/${id}` : "/user/profile";
+    const endpoint = id ? `/user/me/${id}` : "/user/me";
     const response = await serverFetch.get(endpoint, {
       next: { tags: ["user-info"] },
     });

@@ -1,4 +1,4 @@
-import { Badge } from "@/components/ui/badge";
+import { AnalyticsCharts } from "@/components/modules/admin/AnalyticsCharts";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   getDashboardSummary,
@@ -27,8 +27,43 @@ export default async function AdminDashboardPage() {
         totalRevenue: 0,
       };
 
-  //const userStats = userStatsRes?.success ? userStatsRes.data : undefined;
-  //const planStats = planStatsRes?.success ? planStatsRes.data : undefined;
+  const userStats = userStatsRes?.success
+    ? [
+        {
+          name: "Last 7 Days",
+          total: userStatsRes.data.newUsersLast7Days,
+        },
+        {
+          name: "Last 30 Days",
+          total: userStatsRes.data.newUsersLast30Days,
+        },
+        {
+          name: "Active",
+          total: userStatsRes.data.totalActiveUsers,
+        },
+        {
+          name: "Inactive",
+          total: userStatsRes.data.totalInActiveUsers,
+        },
+      ]
+    : undefined;
+
+  const planStats = planStatsRes?.success
+    ? [
+        {
+          name: "Last 7 Days",
+          total: planStatsRes.data.plansLast7Days,
+        },
+        {
+          name: "Last 30 Days",
+          total: planStatsRes.data.plansLast30Days,
+        },
+        {
+          name: "Total Plans",
+          total: planStatsRes.data.totalPlans,
+        },
+      ]
+    : undefined;
 
   // We can pass userStats and planStats to the AnalyticsCharts if they match the MonthlyData[] interface.
   // The AnalyticsCharts component has a built-in fallback to beautiful dummy data if undefined is passed,
@@ -43,7 +78,7 @@ export default async function AdminDashboardPage() {
             Analytics Overview
           </h1>
           <p className="text-muted-foreground mt-1">
-            Monitor system performance, user growth, and revenue.
+            Monitor user growth, and revenue.
           </p>
         </div>
       </div>
@@ -59,7 +94,7 @@ export default async function AdminDashboardPage() {
                   Total Users
                 </p>
                 <h3 className="text-3xl font-bold">
-                  {summary.totalUsers?.toLocaleString()}
+                  {summary?.users?.totalUsers?.toLocaleString()}
                 </h3>
               </div>
               <div className="w-12 h-12 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-500">
@@ -82,7 +117,7 @@ export default async function AdminDashboardPage() {
                   Travel Plans
                 </p>
                 <h3 className="text-3xl font-bold">
-                  {summary.totalPlans?.toLocaleString()}
+                  {summary?.plans?.totalPlans?.toLocaleString()}
                 </h3>
               </div>
               <div className="w-12 h-12 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-500">
@@ -105,7 +140,7 @@ export default async function AdminDashboardPage() {
                   Active Subs
                 </p>
                 <h3 className="text-3xl font-bold">
-                  {summary.activeSubscriptions?.toLocaleString()}
+                  {summary?.subscriptions?.activeSubscriptions?.toLocaleString()}
                 </h3>
               </div>
               <div className="w-12 h-12 rounded-xl bg-amber-500/10 flex items-center justify-center text-amber-500">
@@ -128,7 +163,7 @@ export default async function AdminDashboardPage() {
                   Revenue
                 </p>
                 <h3 className="text-3xl font-bold">
-                  ${summary.totalRevenue?.toLocaleString()}
+                  ${summary?.payments?.totalRevenue?.toLocaleString()}
                 </h3>
               </div>
               <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
@@ -144,10 +179,10 @@ export default async function AdminDashboardPage() {
       </div>
 
       {/* Analytics Charts */}
-      {/* <AnalyticsCharts userGrowthData={userStats} travelPlanData={planStats} /> */}
+      <AnalyticsCharts userGrowthData={userStats} travelPlanData={planStats} />
 
       {/* Bottom Section - System Health or Recent Activity */}
-      <Card className="border-none shadow-md bg-card/60 backdrop-blur-sm">
+      {/* <Card className="border-none shadow-md bg-card/60 backdrop-blur-sm">
         <CardContent className="p-6">
           <div className="flex items-center justify-between mb-6">
             <h3 className="text-lg font-bold">System Health & Metrics</h3>
@@ -177,7 +212,7 @@ export default async function AdminDashboardPage() {
             </div>
           </div>
         </CardContent>
-      </Card>
+      </Card> */}
     </div>
   );
 }

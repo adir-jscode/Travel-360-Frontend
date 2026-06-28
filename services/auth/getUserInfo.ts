@@ -13,7 +13,7 @@ export const getUserInfo = async (): Promise<IUser | null> => {
     const verified = await verifyAccessToken(accessToken);
     if (!verified.success) return null;
 
-    const res = await serverFetch.get("/user/profile", {
+    const res = await serverFetch.get("/user/me", {
       next: { tags: ["user-info"] },
     });
 

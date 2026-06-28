@@ -1,78 +1,132 @@
-import { auth } from "@/auth";
+import {
+  getDefaultDashboardRoute,
+  getRouteOwner,
+  isAuthRoute,
+  isValidRedirectForRole,
+  UserRole,
+} from "@/lib/auth-utils";
+import jwt, { JwtPayload } from "jsonwebtoken";
+import { cookies } from "next/headers";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
-export { auth } from "@/auth";
-const authRoutes = ["/login", "/register", "/forgot-password"];
 
-const adminRoutes = [/^\/admin/];
-const userRoutes = [/^\/user/];
-const commonProtectedRoutes = [
-  "/my-profile",
-  "/change-password",
-  "/reset-password",
-  "/pricing",
-];
+type TokenPayload = JwtPayload & {
+  role: UserRole;
+};
 
-function isAuthRoute(pathname: string): boolean {
-  return authRoutes.includes(pathname);
-}
-
-function isAdminRoute(pathname: string): boolean {
-  return adminRoutes.some((p) => p.test(pathname));
-}
-
-function isUserRoute(pathname: string): boolean {
-  return userRoutes.some((p) => p.test(pathname));
-}
-
-function isProtectedRoute(pathname: string): boolean {
-  return (
-    commonProtectedRoutes.includes(pathname) ||
-    isAdminRoute(pathname) ||
-    isUserRoute(pathname)
-  );
-}
-
-// This function can be marked `async` if using `await` inside
 export async function proxy(request: NextRequest) {
-  const { pathname } = request.nextUrl;
-  const session = await auth();
+  const { pathname, searchParams } = request.nextUrl;
+  const cookieStore = await cookies();
 
-  const accessToken =
-    request.cookies.get("accessToken")?.value || session?.accessToken;
-  const refreshToken =
-    request.cookies.get("refreshToken")?.value || session?.refreshToken;
-  const isLoggedIn = !!(accessToken || refreshToken);
-  console.log("FROM MIDDLEWARE", { isLoggedIn });
-  console.log({ accessToken, refreshToken });
+  const accessToken = request.cookies.get("accessToken")?.value ?? null;
+  const refreshToken = request.cookies.get("refreshToken")?.value ?? null;
 
-  // Redirect logged-in users away from auth routes
-  if (isAuthRoute(pathname) && isLoggedIn) {
-    return NextResponse.redirect(new URL("/", request.url));
+  let role: UserRole | null = null;
+  let isLoggedIn = false;
+
+  /**
+   * ---------------------------------------------------------
+   * Verify JWT
+   * ---------------------------------------------------------
+   */
+  if (accessToken) {
+    try {
+      const decoded = jwt.verify(
+        accessToken,
+        process.env.JWT_SECRET as string,
+      ) as TokenPayload;
+
+      role = decoded.role;
+      isLoggedIn = true;
+    } catch {
+      // Invalid or expired access token
+      cookieStore.delete("accessToken");
+      cookieStore.delete("refreshToken");
+
+      const response = NextResponse.redirect(new URL("/login", request.url));
+
+      response.cookies.delete("accessToken");
+      response.cookies.delete("refreshToken");
+
+      return response;
+    }
+  } else if (refreshToken) {
+    // Refresh token exists (consider logged in)
+    // You can optionally verify it here if needed.
+    isLoggedIn = true;
   }
 
-  // Redirect unauthenticated users away from protected routes
-  if (isProtectedRoute(pathname) && !isLoggedIn) {
+  const routeOwner = getRouteOwner(pathname);
+
+  /**
+   * ---------------------------------------------------------
+   * Logged-in user visiting auth pages
+   * ---------------------------------------------------------
+   */
+  if (isLoggedIn && role && isAuthRoute(pathname)) {
+    const redirect = searchParams.get("redirect");
+
+    if (redirect && isValidRedirectForRole(redirect, role)) {
+      return NextResponse.redirect(new URL(redirect, request.url));
+    }
+
+    return NextResponse.redirect(
+      new URL(getDefaultDashboardRoute(role), request.url),
+    );
+  }
+
+  /**
+   * ---------------------------------------------------------
+   * Public route
+   * ---------------------------------------------------------
+   */
+  if (routeOwner === null) {
+    return NextResponse.next();
+  }
+
+  /**
+   * ---------------------------------------------------------
+   * Protected route but not authenticated
+   * ---------------------------------------------------------
+   */
+  if (!isLoggedIn || !role) {
     const loginUrl = new URL("/login", request.url);
     loginUrl.searchParams.set("redirect", pathname);
+
     return NextResponse.redirect(loginUrl);
+  }
+
+  /**
+   * ---------------------------------------------------------
+   * Common protected routes
+   * ---------------------------------------------------------
+   */
+  if (routeOwner === "COMMON") {
+    return NextResponse.next();
+  }
+
+  /**
+   * ---------------------------------------------------------
+   * Role-based authorization
+   * ---------------------------------------------------------
+   */
+  if (routeOwner === "ADMIN" && role !== "ADMIN" && role !== "SUPER_ADMIN") {
+    return NextResponse.redirect(
+      new URL(getDefaultDashboardRoute(role), request.url),
+    );
+  }
+
+  if (routeOwner === "USER" && role !== "USER" && role !== "GUIDE") {
+    return NextResponse.redirect(
+      new URL(getDefaultDashboardRoute(role), request.url),
+    );
   }
 
   return NextResponse.next();
 }
 
-// Alternatively, you can use a default export:
-// export default function proxy(request: NextRequest) { ... }
-
 export const config = {
   matcher: [
-    /*
-     * Match all request paths except for the ones starting with:
-     * - api (API routes)
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico, sitemap.xml, robots.txt (metadata files)
-     */
-    "/((?!api|_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt|.well-known).*)",
+    "/((?!api|_next/static|_next/image|favicon.ico|robots.txt|sitemap.xml|.*\\..*).*)",
   ],
 };
