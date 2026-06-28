@@ -9,8 +9,10 @@ import {
   CheckCircle2,
   Clock,
   Globe,
+  Loader2,
   MapPin,
   MessageSquare,
+  RefreshCw,
   Search,
   Star,
   Users,
@@ -19,8 +21,9 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import { useMemo, useState } from "react";
+import { toast } from "sonner";
 
-type Tab = "accepted" | "rejected";
+type Tab = "pending" | "accepted" | "rejected";
 type SortKey = "newest" | "oldest" | "destination";
 
 function timeAgo(dateStr: string): string {
@@ -39,6 +42,7 @@ function timeAgo(dateStr: string): string {
 }
 
 function formatDateRange(start: string, end: string): string {
+  if (!start || !end) return "—";
   const s = new Intl.DateTimeFormat("en-US", {
     month: "short",
     day: "numeric",
@@ -84,9 +88,48 @@ function StatCard({
 }
 
 /* ─────────────────── Request Card ──────────────────── */
-function TripRequestCard({ request }: { request: IJoinRequest }) {
+function TripRequestCard({
+  request,
+  onAccept,
+  onReject,
+}: {
+  request: IJoinRequest;
+  onAccept?: (id: string) => Promise<void>;
+  onReject?: (id: string) => Promise<void>;
+}) {
   const [expanded, setExpanded] = useState(false);
+  const [actionLoading, setActionLoading] = useState<
+    "accept" | "reject" | null
+  >(null);
   const isAccepted = request.status === JoinRequestStatus.ACCEPTED;
+  const isRejected = request.status === JoinRequestStatus.REJECTED;
+  const isPending = request.status === JoinRequestStatus.PENDING;
+
+  const handleAccept = async () => {
+    if (!onAccept) return;
+    setActionLoading("accept");
+    try {
+      await onAccept(request._id);
+      toast.success(`Accepted ${request.requester.name}'s request!`);
+    } catch {
+      toast.error("Failed to accept request");
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const handleReject = async () => {
+    if (!onReject) return;
+    setActionLoading("reject");
+    try {
+      await onReject(request._id);
+      toast.success(`Declined ${request.requester.name}'s request.`);
+    } catch {
+      toast.error("Failed to decline request");
+    } finally {
+      setActionLoading(null);
+    }
+  };
 
   return (
     <motion.div
@@ -102,7 +145,9 @@ function TripRequestCard({ request }: { request: IJoinRequest }) {
         className={`h-0.5 w-full ${
           isAccepted
             ? "bg-linear-to-r from-emerald-400 to-teal-400"
-            : "bg-linear-to-r from-rose-400 to-rose-600"
+            : isRejected
+              ? "bg-linear-to-r from-rose-400 to-rose-600"
+              : "bg-linear-to-r from-primary to-amber-400"
         }`}
       />
 
@@ -149,53 +194,70 @@ function TripRequestCard({ request }: { request: IJoinRequest }) {
                   </div>
                 )}
               </div>
+
               <div className="flex items-center gap-2 shrink-0">
                 <span
                   className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border ${
                     isAccepted
                       ? "bg-emerald-500/10 text-emerald-600 border-emerald-500/20"
-                      : "bg-rose-500/10 text-rose-500 border-rose-500/20"
+                      : isRejected
+                        ? "bg-rose-500/10 text-rose-500 border-rose-500/20"
+                        : "bg-amber-500/10 text-amber-600 border-amber-500/20"
                   }`}
                 >
                   {isAccepted ? (
                     <CheckCircle2 className="w-3 h-3" />
-                  ) : (
+                  ) : isRejected ? (
                     <XCircle className="w-3 h-3" />
+                  ) : (
+                    <Clock className="w-3 h-3" />
                   )}
-                  {isAccepted ? "Accepted" : "Declined"}
+                  {isAccepted
+                    ? "Accepted"
+                    : isRejected
+                      ? "Declined"
+                      : "Pending"}
                 </span>
                 <span className="flex items-center gap-1 text-xs text-muted-foreground">
                   <Clock className="w-3 h-3" />
-                  {timeAgo(request.updatedAt)}
+                  {timeAgo(request.updatedAt || request.createdAt)}
                 </span>
               </div>
             </div>
 
             {/* Trip info */}
             <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1.5 text-xs text-muted-foreground">
-              <span className="flex items-center gap-1">
-                <Globe className="w-3 h-3 text-primary" />
-                <span className="font-medium text-foreground">
-                  {request.travelPlan.destination.city
-                    ? `${request.travelPlan.destination.city}, `
-                    : ""}
-                  {request.travelPlan.destination.country}
+              {request.travelPlan?.destination?.country && (
+                <span className="flex items-center gap-1">
+                  <Globe className="w-3 h-3 text-primary" />
+                  <span className="font-medium text-foreground">
+                    {request.travelPlan.destination.city
+                      ? `${request.travelPlan.destination.city}, `
+                      : ""}
+                    {request.travelPlan.destination.country}
+                  </span>
                 </span>
-              </span>
-              <span className="flex items-center gap-1">
-                <Calendar className="w-3 h-3 text-primary" />
-                {formatDateRange(
-                  request.travelPlan.startDate,
-                  request.travelPlan.endDate,
-                )}
-              </span>
-              <span className="font-medium">
-                {request.travelPlan.days} days
-              </span>
-              <span className="flex items-center gap-1">
-                <Users className="w-3 h-3 text-primary" />
-                {request.travelPlan.travelType}
-              </span>
+              )}
+              {request.travelPlan?.startDate && (
+                <span className="flex items-center gap-1">
+                  <Calendar className="w-3 h-3 text-primary" />
+                  {formatDateRange(
+                    request.travelPlan.startDate,
+                    request.travelPlan.endDate,
+                  )}
+                </span>
+              )}
+              {request.travelPlan?.days ? (
+                <span className="font-medium">
+                  {request.travelPlan.days} days
+                </span>
+              ) : null}
+              {request.travelPlan?.travelType && (
+                <span className="flex items-center gap-1">
+                  <Users className="w-3 h-3 text-primary" />
+                  {request.travelPlan.travelType}
+                </span>
+              )}
             </div>
 
             {/* Interests */}
@@ -247,6 +309,36 @@ function TripRequestCard({ request }: { request: IJoinRequest }) {
             </AnimatePresence>
           </div>
         )}
+
+        {/* Accept / Reject actions (pending only) */}
+        {isPending && (
+          <div className="mt-4 pt-4 border-t border-border/40 flex items-center gap-3">
+            <button
+              onClick={handleAccept}
+              disabled={!!actionLoading}
+              className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl bg-emerald-500/10 text-emerald-600 border border-emerald-500/25 hover:bg-emerald-500/20 hover:border-emerald-500/40 transition-all duration-200 text-sm font-semibold disabled:opacity-50"
+            >
+              {actionLoading === "accept" ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <Check className="w-4 h-4" />
+              )}
+              Accept
+            </button>
+            <button
+              onClick={handleReject}
+              disabled={!!actionLoading}
+              className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl bg-rose-500/8 text-rose-500 border border-rose-500/20 hover:bg-rose-500/15 hover:border-rose-500/35 transition-all duration-200 text-sm font-semibold disabled:opacity-50"
+            >
+              {actionLoading === "reject" ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <X className="w-4 h-4" />
+              )}
+              Decline
+            </button>
+          </div>
+        )}
       </div>
     </motion.div>
   );
@@ -254,6 +346,27 @@ function TripRequestCard({ request }: { request: IJoinRequest }) {
 
 /* ─────────────────── Empty State ──────────────────── */
 function EmptyState({ tab }: { tab: Tab }) {
+  const config = {
+    pending: {
+      icon: <Clock className="w-10 h-10 text-amber-500/50" />,
+      bg: "bg-amber-500/10",
+      title: "No pending requests",
+      desc: "When travelers request to join your trips, they'll appear here for review.",
+    },
+    accepted: {
+      icon: <CheckCircle2 className="w-10 h-10 text-emerald-500/50" />,
+      bg: "bg-emerald-500/10",
+      title: "No accepted trips yet",
+      desc: "Trips you approve will show up here. Start reviewing pending requests.",
+    },
+    rejected: {
+      icon: <XCircle className="w-10 h-10 text-rose-400/50" />,
+      bg: "bg-rose-500/10",
+      title: "No declined trips",
+      desc: "Any requests you decline will be listed here for reference.",
+    },
+  }[tab];
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 12 }}
@@ -261,24 +374,14 @@ function EmptyState({ tab }: { tab: Tab }) {
       className="flex flex-col items-center justify-center py-20 text-center gap-4"
     >
       <div
-        className={`w-20 h-20 rounded-full flex items-center justify-center ${
-          tab === "accepted" ? "bg-emerald-500/10" : "bg-rose-500/10"
-        }`}
+        className={`w-20 h-20 rounded-full flex items-center justify-center ${config.bg}`}
       >
-        {tab === "accepted" ? (
-          <CheckCircle2 className="w-10 h-10 text-emerald-500/50" />
-        ) : (
-          <XCircle className="w-10 h-10 text-rose-400/50" />
-        )}
+        {config.icon}
       </div>
       <div>
-        <p className="font-semibold text-foreground text-lg">
-          {tab === "accepted" ? "No accepted trips yet" : "No declined trips"}
-        </p>
+        <p className="font-semibold text-foreground text-lg">{config.title}</p>
         <p className="text-sm text-muted-foreground mt-1 max-w-xs">
-          {tab === "accepted"
-            ? "Trips you approve will show up here. Start reviewing pending requests."
-            : "Any requests you decline will be listed here for reference."}
+          {config.desc}
         </p>
       </div>
     </motion.div>
@@ -287,12 +390,21 @@ function EmptyState({ tab }: { tab: Tab }) {
 
 /* ─────────────────── Main Page ──────────────────── */
 export default function TripRequestsPage() {
-  const { accepted, rejected, pending } = useNotifications();
-  const [tab, setTab] = useState<Tab>("accepted");
+  const {
+    accepted,
+    rejected,
+    pending,
+    loading,
+    acceptRequest,
+    rejectRequest,
+    refetch,
+  } = useNotifications();
+  const [tab, setTab] = useState<Tab>("pending");
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState<SortKey>("newest");
 
-  const requests = tab === "accepted" ? accepted : rejected;
+  const requests =
+    tab === "accepted" ? accepted : tab === "rejected" ? rejected : pending;
 
   const filtered = useMemo(() => {
     let list = [...requests];
@@ -301,32 +413,63 @@ export default function TripRequestsPage() {
       list = list.filter(
         (r) =>
           r.requester.name.toLowerCase().includes(q) ||
-          r.travelPlan.destination.country.toLowerCase().includes(q) ||
-          (r.travelPlan.destination.city?.toLowerCase().includes(q) ?? false),
+          (r.travelPlan?.destination?.country?.toLowerCase().includes(q) ??
+            false) ||
+          (r.travelPlan?.destination?.city?.toLowerCase().includes(q) ?? false),
       );
     }
     if (sort === "newest")
-      list.sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
+      list.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
     if (sort === "oldest")
-      list.sort((a, b) => a.updatedAt.localeCompare(b.updatedAt));
+      list.sort((a, b) => a.createdAt.localeCompare(b.createdAt));
     if (sort === "destination")
       list.sort((a, b) =>
-        a.travelPlan.destination.country.localeCompare(
-          b.travelPlan.destination.country,
+        (a.travelPlan?.destination?.country ?? "").localeCompare(
+          b.travelPlan?.destination?.country ?? "",
         ),
       );
     return list;
   }, [requests, search, sort]);
 
+  const tabs: { key: Tab; label: string; count: number; color: string }[] = [
+    {
+      key: "pending",
+      label: "Pending",
+      count: pending.length,
+      color: "bg-amber-500/15 text-amber-600",
+    },
+    {
+      key: "accepted",
+      label: "Accepted",
+      count: accepted.length,
+      color: "bg-emerald-500/15 text-emerald-600",
+    },
+    {
+      key: "rejected",
+      label: "Declined",
+      count: rejected.length,
+      color: "bg-rose-500/15 text-rose-500",
+    },
+  ];
+
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-12">
       {/* Page header */}
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Trip Requests</h1>
-        <p className="text-muted-foreground mt-1">
-          Track every traveler you have welcomed or declined across all your
-          plans.
-        </p>
+      <div className="flex items-start justify-between">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Trip Requests</h1>
+          <p className="text-muted-foreground mt-1">
+            Review and manage all join requests for your travel plans.
+          </p>
+        </div>
+        <button
+          onClick={refetch}
+          disabled={loading}
+          className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors border border-border/60 rounded-xl px-4 py-2.5 bg-card/60 hover:bg-card"
+        >
+          <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
+          Refresh
+        </button>
       </div>
 
       {/* Stats row */}
@@ -355,34 +498,21 @@ export default function TripRequestsPage() {
       <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
         {/* Tab switcher */}
         <div className="flex p-1 rounded-xl bg-muted/60 border border-border/40">
-          {(["accepted", "rejected"] as Tab[]).map((t) => (
+          {tabs.map((t) => (
             <button
-              key={t}
-              onClick={() => setTab(t)}
+              key={t.key}
+              onClick={() => setTab(t.key)}
               className={`relative flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
-                tab === t
+                tab === t.key
                   ? "bg-card text-foreground shadow-sm"
                   : "text-muted-foreground hover:text-foreground"
               }`}
             >
-              {t === "accepted" ? (
-                <CheckCircle2
-                  className={`w-4 h-4 ${tab === "accepted" ? "text-emerald-500" : ""}`}
-                />
-              ) : (
-                <XCircle
-                  className={`w-4 h-4 ${tab === "rejected" ? "text-rose-500" : ""}`}
-                />
-              )}
-              <span className="capitalize">{t}</span>
+              <span className="capitalize">{t.label}</span>
               <span
-                className={`ml-1 px-1.5 py-0.5 rounded-full text-[10px] font-bold ${
-                  t === "accepted"
-                    ? "bg-emerald-500/15 text-emerald-600"
-                    : "bg-rose-500/15 text-rose-500"
-                }`}
+                className={`ml-1 px-1.5 py-0.5 rounded-full text-[10px] font-bold ${t.color}`}
               >
-                {t === "accepted" ? accepted.length : rejected.length}
+                {t.count}
               </span>
             </button>
           ))}
@@ -412,28 +542,42 @@ export default function TripRequestsPage() {
         </div>
       </div>
 
+      {/* Loading */}
+      {loading && (
+        <div className="flex items-center justify-center py-16">
+          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        </div>
+      )}
+
       {/* Results */}
-      <div>
-        <AnimatePresence mode="wait">
-          {filtered.length === 0 ? (
-            <EmptyState key="empty" tab={tab} />
-          ) : (
-            <motion.div
-              key={tab}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="grid grid-cols-1 lg:grid-cols-2 gap-4"
-            >
-              <AnimatePresence>
-                {filtered.map((req) => (
-                  <TripRequestCard key={req._id} request={req} />
-                ))}
-              </AnimatePresence>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
+      {!loading && (
+        <div>
+          <AnimatePresence mode="wait">
+            {filtered.length === 0 ? (
+              <EmptyState key="empty" tab={tab} />
+            ) : (
+              <motion.div
+                key={tab}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="grid grid-cols-1 lg:grid-cols-2 gap-4"
+              >
+                <AnimatePresence>
+                  {filtered.map((req) => (
+                    <TripRequestCard
+                      key={req._id}
+                      request={req}
+                      onAccept={tab === "pending" ? acceptRequest : undefined}
+                      onReject={tab === "pending" ? rejectRequest : undefined}
+                    />
+                  ))}
+                </AnimatePresence>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      )}
     </div>
   );
 }

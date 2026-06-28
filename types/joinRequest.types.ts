@@ -35,8 +35,12 @@ export interface IJoinRequest {
 
 export interface INotification {
   _id: string;
-  joinRequest: IJoinRequest;
-  type: "JOIN_REQUEST";
+  /** Populated join request (present on mock/socket-derived data) */
+  joinRequest?: IJoinRequest;
+  type: "JOIN_REQUEST" | "REQUEST_ACCEPTED" | "REQUEST_REJECTED" | string;
+  title?: string;
+  message?: string;
   isRead: boolean;
   createdAt: string;
+  metadata?: Record<string, unknown>;
 }

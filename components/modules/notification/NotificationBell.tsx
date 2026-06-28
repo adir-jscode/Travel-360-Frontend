@@ -9,6 +9,7 @@ import { useEffect, useRef, useState } from "react";
 
 interface NotificationBellProps {
   onOpenPanel?: () => void;
+  userId?: string; // Fix 1: added missing prop
 }
 
 function timeAgo(dateStr: string): string {
@@ -27,15 +28,24 @@ export function NotificationBell({ onOpenPanel }: NotificationBellProps) {
   const [newNotifId, setNewNotifId] = useState<string | null>(null);
   const prevCountRef = useRef(unreadCount);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Detect new notification arrival
+  // Fix 2: defer setState with setTimeout to avoid synchronous setState in effect
   useEffect(() => {
     if (unreadCount > prevCountRef.current) {
       const newest = liveNotifications[0];
-      if (newest) setNewNotifId(newest._id);
-      setTimeout(() => setNewNotifId(null), 4000);
+      if (newest) {
+        timeoutRef.current = setTimeout(() => {
+          setNewNotifId(newest._id);
+        }, 0);
+        setTimeout(() => setNewNotifId(null), 4000);
+      }
     }
     prevCountRef.current = unreadCount;
+
+    return () => {
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    };
   }, [unreadCount, liveNotifications]);
 
   // Close on outside click
@@ -75,7 +85,7 @@ export function NotificationBell({ onOpenPanel }: NotificationBellProps) {
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
               exit={{ scale: 0 }}
-              className="absolute -top-1 -right-1 min-w-[18px] h-[18px] flex items-center justify-center rounded-full bg-primary text-primary-foreground text-[10px] font-bold px-1 shadow-md"
+              className="absolute -top-1 -right-1 min-w-4.5 h-4.5 flex items-center justify-center rounded-full bg-primary text-primary-foreground text-[10px] font-bold px-1 shadow-md"
             >
               {unreadCount > 9 ? "9+" : unreadCount}
             </motion.span>
@@ -168,7 +178,7 @@ function NotificationItem({ notif }: { notif: INotification }) {
       className={`flex gap-3 px-4 py-3 transition-colors hover:bg-muted/40 ${!notif.isRead ? "bg-primary/4" : ""}`}
     >
       <div className="relative shrink-0">
-        {req.requester.picture ? (
+        {req?.requester.picture ? (
           <div className="w-10 h-10 rounded-full overflow-hidden">
             <Image
               src={req.requester.picture}
@@ -180,7 +190,7 @@ function NotificationItem({ notif }: { notif: INotification }) {
           </div>
         ) : (
           <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold text-sm">
-            {req.requester.name.charAt(0)}
+            {req?.requester.name.charAt(0)}
           </div>
         )}
         {!notif.isRead && (
@@ -189,16 +199,16 @@ function NotificationItem({ notif }: { notif: INotification }) {
       </div>
       <div className="flex-1 min-w-0">
         <p className="text-sm text-foreground leading-snug">
-          <span className="font-semibold">{req.requester.name}</span> wants to
+          <span className="font-semibold">{req?.requester.name}</span> wants to
           join your trip to{" "}
           <span className="font-semibold text-primary">
-            {req.travelPlan.destination.city ||
-              req.travelPlan.destination.country}
+            {req?.travelPlan.destination.city ||
+              req?.travelPlan.destination.country}
           </span>
         </p>
         <div className="flex items-center gap-1 mt-0.5 text-xs text-muted-foreground">
           <MapPin className="w-3 h-3" />
-          {req.requester.currentLocation || "Unknown location"}
+          {req?.requester.currentLocation || "Unknown location"}
           <span className="ml-auto">{timeAgo(notif.createdAt)}</span>
         </div>
       </div>
@@ -226,7 +236,7 @@ function LiveToast({
       animate={{ opacity: 1, x: 0, scale: 1 }}
       exit={{ opacity: 0, x: 60, scale: 0.95 }}
       transition={{ type: "spring", stiffness: 300, damping: 30 }}
-      className="fixed bottom-6 right-6 z-[9999] w-80 rounded-2xl border border-border/60 bg-card/95 backdrop-blur-xl shadow-elegant overflow-hidden"
+      className="fixed bottom-6 right-6 z-9999 w-80 rounded-2xl border border-border/60 bg-card/95 backdrop-blur-xl shadow-elegant overflow-hidden"
     >
       {/* Progress bar */}
       <motion.div
@@ -238,7 +248,7 @@ function LiveToast({
 
       <div className="flex gap-3 p-4">
         <div className="relative shrink-0">
-          {req.requester.picture ? (
+          {req?.requester.picture ? (
             <div className="w-11 h-11 rounded-full overflow-hidden ring-2 ring-primary/30">
               <Image
                 src={req.requester.picture}
@@ -250,7 +260,7 @@ function LiveToast({
             </div>
           ) : (
             <div className="w-11 h-11 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold">
-              {req.requester.name.charAt(0)}
+              {req?.requester.name.charAt(0)}
             </div>
           )}
           <span className="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full bg-primary flex items-center justify-center">
@@ -263,12 +273,12 @@ function LiveToast({
             New Join Request
           </p>
           <p className="text-sm font-medium text-foreground leading-snug">
-            {req.requester.name} wants to join your trip to{" "}
-            {req.travelPlan.destination.city ||
-              req.travelPlan.destination.country}
+            {req?.requester.name} wants to join your trip to{" "}
+            {req?.travelPlan.destination.city ||
+              req?.travelPlan.destination.country}
           </p>
           <p className="text-xs text-muted-foreground mt-0.5">
-            {req.requester.currentLocation}
+            {req?.requester.currentLocation}
           </p>
         </div>
 

@@ -38,9 +38,17 @@ const POPULAR_DESTINATIONS = [
 
 interface TravelPlanSearchProps {
   initialPlans: ITravelPlan[];
+  isLoggedIn?: boolean;
+  hasSubscription?: boolean;
+  currentUserId?: string;
 }
 
-export function TravelPlanSearch({ initialPlans }: TravelPlanSearchProps) {
+export function TravelPlanSearch({
+  initialPlans,
+  isLoggedIn = false,
+  hasSubscription = false,
+  currentUserId,
+}: TravelPlanSearchProps) {
   const [filters, setFilters] = useState<Filters>({
     country: "",
     city: "",
@@ -307,6 +315,9 @@ export function TravelPlanSearch({ initialPlans }: TravelPlanSearchProps) {
               key={plan._id}
               plan={plan}
               href={`/travel-plans/${plan._id}`}
+              isLoggedIn={isLoggedIn}
+              hasSubscription={hasSubscription}
+              currentUserId={currentUserId}
             />
           ))}
         </div>

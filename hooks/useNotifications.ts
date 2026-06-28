@@ -1,234 +1,214 @@
 "use client";
 
+import { respondToJoinRequest } from "@/services/joinRequest/joinRequest.service";
 import {
   IJoinRequest,
   INotification,
   JoinRequestStatus,
 } from "@/types/joinRequest.types";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { io, Socket } from "socket.io-client";
 
-// Mock data — replace with real SSE/WebSocket when API is ready
-const MOCK_PENDING: IJoinRequest[] = [
-  {
-    _id: "req_001",
+const BASE_API =
+  process.env.NEXT_PUBLIC_BASE_API_URL?.replace("/api/v1", "") ||
+  "http://localhost:5000";
+
+function notifToJoinRequest(notif: RawNotification): IJoinRequest | null {
+  const meta = notif.metadata;
+  if (!meta) return null;
+  return {
+    _id: meta.joinRequestId as string,
     travelPlan: {
-      _id: "plan_001",
-      destination: { city: "Lisbon", country: "Portugal" },
-      startDate: "2025-09-10T00:00:00.000Z",
-      endDate: "2025-09-20T00:00:00.000Z",
-      days: 10,
-      travelType: "FRIENDS",
+      _id: (meta.travelPlanId as string) ?? "",
+      destination: { city: undefined, country: "" },
+      startDate: "",
+      endDate: "",
+      days: 0,
+      travelType: "",
     },
     requester: {
-      _id: "usr_a",
-      name: "Ayesha Rahman",
-      email: "ayesha@example.com",
-      picture: "https://i.pravatar.cc/80?img=47",
-      currentLocation: "Dhaka, Bangladesh",
-      travelInterest: ["Culture", "Food", "Architecture"],
-      rating: 4.8,
+      _id: (notif.sender?._id as string) ?? "",
+      name:
+        (meta.requesterName as string) ??
+        (notif.sender?.name as string) ??
+        "Unknown",
+      email: "",
+      picture:
+        (meta.requesterPicture as string) ??
+        (notif.sender?.picture as string) ??
+        undefined,
     },
-    planOwner: "me",
+    planOwner: "",
     status: JoinRequestStatus.PENDING,
-    message:
-      "Hey! I've been dreaming of Lisbon for years. Your itinerary looks perfect — would love to join if there's still room!",
-    createdAt: new Date(Date.now() - 1000 * 60 * 3).toISOString(),
-    updatedAt: new Date(Date.now() - 1000 * 60 * 3).toISOString(),
-  },
-  {
-    _id: "req_002",
-    travelPlan: {
-      _id: "plan_001",
-      destination: { city: "Lisbon", country: "Portugal" },
-      startDate: "2025-09-10T00:00:00.000Z",
-      endDate: "2025-09-20T00:00:00.000Z",
-      days: 10,
-      travelType: "FRIENDS",
-    },
-    requester: {
-      _id: "usr_b",
-      name: "Carlos Mendez",
-      email: "carlos@example.com",
-      picture: "https://i.pravatar.cc/80?img=68",
-      currentLocation: "Madrid, Spain",
-      travelInterest: ["Photography", "History", "Street Art"],
-      rating: 4.5,
-    },
-    planOwner: "me",
-    status: JoinRequestStatus.PENDING,
-    message:
-      "Your plan looks amazing. I'm a photographer and can document the whole trip!",
-    createdAt: new Date(Date.now() - 1000 * 60 * 45).toISOString(),
-    updatedAt: new Date(Date.now() - 1000 * 60 * 45).toISOString(),
-  },
-];
+    message: notif.message,
+    createdAt: notif.createdAt,
+    updatedAt: notif.createdAt,
+  };
+}
 
-const MOCK_ACCEPTED: IJoinRequest[] = [
-  {
-    _id: "req_003",
-    travelPlan: {
-      _id: "plan_002",
-      destination: { city: "Kyoto", country: "Japan" },
-      startDate: "2025-04-01T00:00:00.000Z",
-      endDate: "2025-04-14T00:00:00.000Z",
-      days: 14,
-      travelType: "FRIENDS",
-    },
-    requester: {
-      _id: "usr_c",
-      name: "Sakura Tanaka",
-      email: "sakura@example.com",
-      picture: "https://i.pravatar.cc/80?img=32",
-      currentLocation: "Tokyo, Japan",
-      travelInterest: ["Temples", "Tea Ceremony", "Ikebana"],
-      rating: 5.0,
-    },
-    planOwner: "me",
-    status: JoinRequestStatus.ACCEPTED,
-    message: "I know Kyoto well — happy to be a local guide for the group!",
-    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3).toISOString(),
-    updatedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2).toISOString(),
-  },
-  {
-    _id: "req_004",
-    travelPlan: {
-      _id: "plan_002",
-      destination: { city: "Kyoto", country: "Japan" },
-      startDate: "2025-04-01T00:00:00.000Z",
-      endDate: "2025-04-14T00:00:00.000Z",
-      days: 14,
-      travelType: "FRIENDS",
-    },
-    requester: {
-      _id: "usr_d",
-      name: "Jordan Lee",
-      email: "jordan@example.com",
-      picture: "https://i.pravatar.cc/80?img=12",
-      currentLocation: "San Francisco, USA",
-      travelInterest: ["Anime", "Street Food", "Technology"],
-      rating: 4.2,
-    },
-    planOwner: "me",
-    status: JoinRequestStatus.ACCEPTED,
-    message: "First time to Japan! So excited to explore Kyoto with a group.",
-    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 5).toISOString(),
-    updatedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 4).toISOString(),
-  },
-];
+interface RawNotification {
+  _id: string;
+  type: string;
+  title: string;
+  message: string;
+  isRead: boolean;
+  createdAt: string;
+  metadata?: Record<string, unknown>;
+  sender?: { _id: string; name: string; picture?: string };
+}
 
-const MOCK_REJECTED: IJoinRequest[] = [
-  {
-    _id: "req_005",
-    travelPlan: {
-      _id: "plan_001",
-      destination: { city: "Lisbon", country: "Portugal" },
-      startDate: "2025-09-10T00:00:00.000Z",
-      endDate: "2025-09-20T00:00:00.000Z",
-      days: 10,
-      travelType: "FRIENDS",
-    },
-    requester: {
-      _id: "usr_e",
-      name: "Priya Sharma",
-      email: "priya@example.com",
-      picture: "https://i.pravatar.cc/80?img=56",
-      currentLocation: "Mumbai, India",
-      travelInterest: ["Beaches", "Nightlife", "Shopping"],
-      rating: 3.9,
-    },
-    planOwner: "me",
-    status: JoinRequestStatus.REJECTED,
-    message: "Looking for travel buddies for the Portugal trip!",
-    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 7).toISOString(),
-    updatedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 6).toISOString(),
-  },
-];
-
-export function useNotifications() {
-  const [pending, setPending] = useState<IJoinRequest[]>(MOCK_PENDING);
-  const [accepted, setAccepted] = useState<IJoinRequest[]>(MOCK_ACCEPTED);
-  const [rejected, setRejected] = useState<IJoinRequest[]>(MOCK_REJECTED);
+export function useNotifications(userId?: string) {
+  const [pending, setPending] = useState<IJoinRequest[]>([]);
+  const [accepted, setAccepted] = useState<IJoinRequest[]>([]);
+  const [rejected, setRejected] = useState<IJoinRequest[]>([]);
   const [liveNotifications, setLiveNotifications] = useState<INotification[]>(
     [],
   );
   const [unreadCount, setUnreadCount] = useState(0);
-  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [loading, setLoading] = useState(false);
+  const socketRef = useRef<Socket | null>(null);
 
-  // Simulate a new incoming join request after 8 seconds
+  // ── Fetch incoming join requests ───────────────────────────────────────
+  const fetchRequests = useCallback(async () => {
+    // FIX 1: Guard was already here — but now userId is actually passed in
+    // from NotificationBell, so this will run correctly.
+    if (!userId) return;
+    setLoading(true);
+    try {
+      const res = await fetch("/api/join-request/incoming", {
+        cache: "no-store",
+        // FIX 2: Browser fetch from a client component automatically sends
+        // cookies, so credentials: "include" ensures the auth cookie is sent.
+        credentials: "include",
+      });
+      if (!res.ok) return;
+      const data = await res.json();
+      if (data.success && Array.isArray(data.data)) {
+        const all: IJoinRequest[] = data.data;
+        setPending(all.filter((r) => r.status === JoinRequestStatus.PENDING));
+        setAccepted(all.filter((r) => r.status === JoinRequestStatus.ACCEPTED));
+        setRejected(all.filter((r) => r.status === JoinRequestStatus.REJECTED));
+      }
+    } catch (err) {
+      console.error("[useNotifications] fetchRequests error:", err);
+    } finally {
+      setLoading(false);
+    }
+  }, [userId]);
+
+  // ── Fetch unread count ─────────────────────────────────────────────────
+  const fetchUnreadCount = useCallback(async () => {
+    if (!userId) return;
+    try {
+      const res = await fetch("/api/notifications/unread-count", {
+        cache: "no-store",
+        credentials: "include",
+      });
+      if (!res.ok) return;
+      const data = await res.json();
+      if (data.success) setUnreadCount(data.data ?? 0);
+    } catch (err) {
+      console.error("[useNotifications] fetchUnreadCount error:", err);
+    }
+  }, [userId]);
+
+  // ── Initial data load ──────────────────────────────────────────────────
   useEffect(() => {
-    timerRef.current = setTimeout(() => {
-      const simulatedRequest: IJoinRequest = {
-        _id: `req_live_${Date.now()}`,
-        travelPlan: {
-          _id: "plan_001",
-          destination: { city: "Lisbon", country: "Portugal" },
-          startDate: "2025-09-10T00:00:00.000Z",
-          endDate: "2025-09-20T00:00:00.000Z",
-          days: 10,
-          travelType: "FRIENDS",
-        },
-        requester: {
-          _id: "usr_live",
-          name: "Nina Petrov",
-          email: "nina@example.com",
-          picture: "https://i.pravatar.cc/80?img=25",
-          currentLocation: "Prague, Czech Republic",
-          travelInterest: ["Architecture", "Wine", "Jazz"],
-          rating: 4.7,
-        },
-        planOwner: "me",
-        status: JoinRequestStatus.PENDING,
-        message:
-          "I noticed your Lisbon trip — I'll be in Portugal the same dates and would love to connect!",
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      };
+    if (!userId) return;
+    fetchRequests();
+    fetchUnreadCount();
+  }, [userId, fetchRequests, fetchUnreadCount]);
 
-      const notification: INotification = {
-        _id: `notif_${Date.now()}`,
-        joinRequest: simulatedRequest,
-        type: "JOIN_REQUEST",
+  // ── Socket.IO connection for real-time notifications ───────────────────
+  useEffect(() => {
+    if (!userId) return;
+
+    const socket = io(BASE_API, {
+      query: { userId },
+      transports: ["websocket", "polling"],
+      reconnection: true,
+      reconnectionDelay: 2000,
+    });
+    socketRef.current = socket;
+
+    socket.on("notification", (rawNotif: RawNotification) => {
+      const notif: INotification = {
+        _id: rawNotif._id,
+        type: rawNotif.type as "JOIN_REQUEST",
         isRead: false,
-        createdAt: new Date().toISOString(),
+        createdAt: rawNotif.createdAt,
+        joinRequest: notifToJoinRequest(rawNotif) as IJoinRequest,
       };
 
-      setPending((prev) => [simulatedRequest, ...prev]);
-      setLiveNotifications((prev) => [notification, ...prev]);
+      setLiveNotifications((prev) => [notif, ...prev]);
       setUnreadCount((prev) => prev + 1);
-    }, 8000);
+
+      if (
+        rawNotif.type === "JOIN_REQUEST" ||
+        rawNotif.type === "REQUEST_ACCEPTED" ||
+        rawNotif.type === "REQUEST_REJECTED"
+      ) {
+        fetchRequests();
+      }
+    });
+
+    socket.on("connect_error", (err) => {
+      console.warn("Socket connection error:", err.message);
+    });
 
     return () => {
-      if (timerRef.current) clearTimeout(timerRef.current);
+      socket.disconnect();
+      socketRef.current = null;
     };
-  }, []);
+  }, [userId, fetchRequests]);
 
-  const markAllRead = useCallback(() => {
+  // ── Mark all read ──────────────────────────────────────────────────────
+  const markAllRead = useCallback(async () => {
     setUnreadCount(0);
     setLiveNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
+    try {
+      await fetch("/api/notifications/mark-all-read", {
+        method: "PATCH",
+        credentials: "include",
+      });
+    } catch {
+      // swallow
+    }
   }, []);
 
-  const acceptRequest = useCallback((requestId: string) => {
-    setPending((prev) => {
-      const req = prev.find((r) => r._id === requestId);
-      if (!req) return prev;
-      setAccepted((acc) => [
-        { ...req, status: JoinRequestStatus.ACCEPTED },
-        ...acc,
-      ]);
-      return prev.filter((r) => r._id !== requestId);
-    });
+  // ── Accept / Reject helpers ────────────────────────────────────────────
+  const acceptRequest = useCallback(async (requestId: string) => {
+    const result = await respondToJoinRequest(requestId, "accept");
+    if (result.success) {
+      setPending((prev) => {
+        const req = prev.find((r) => r._id === requestId);
+        if (req) {
+          setAccepted((acc) => [
+            { ...req, status: JoinRequestStatus.ACCEPTED },
+            ...acc,
+          ]);
+        }
+        return prev.filter((r) => r._id !== requestId);
+      });
+    }
+    return result;
   }, []);
 
-  const rejectRequest = useCallback((requestId: string) => {
-    setPending((prev) => {
-      const req = prev.find((r) => r._id === requestId);
-      if (!req) return prev;
-      setRejected((rej) => [
-        { ...req, status: JoinRequestStatus.REJECTED },
-        ...rej,
-      ]);
-      return prev.filter((r) => r._id !== requestId);
-    });
+  const rejectRequest = useCallback(async (requestId: string) => {
+    const result = await respondToJoinRequest(requestId, "reject");
+    if (result.success) {
+      setPending((prev) => {
+        const req = prev.find((r) => r._id === requestId);
+        if (req) {
+          setRejected((rej) => [
+            { ...req, status: JoinRequestStatus.REJECTED },
+            ...rej,
+          ]);
+        }
+        return prev.filter((r) => r._id !== requestId);
+      });
+    }
+    return result;
   }, []);
 
   return {
@@ -237,8 +217,10 @@ export function useNotifications() {
     rejected,
     liveNotifications,
     unreadCount,
+    loading,
     markAllRead,
     acceptRequest,
     rejectRequest,
+    refetch: fetchRequests,
   };
 }

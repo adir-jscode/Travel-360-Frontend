@@ -1,3 +1,6 @@
+"use client";
+
+import { JoinRequestButton } from "@/components/modules/notification/JoinRequestButton";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { ITravelPlan, TravelType } from "@/types/travelPlan.types";
@@ -8,9 +11,21 @@ import { useMemo } from "react";
 interface TravelPlanCardProps {
   plan: ITravelPlan;
   href?: string;
+  /** Pass session info from server component to decide which UI to show */
+  isLoggedIn?: boolean;
+  hasSubscription?: boolean;
+  currentUserId?: string;
+  hasAlreadyRequested?: boolean;
 }
 
-export function TravelPlanCard({ plan, href }: TravelPlanCardProps) {
+export function TravelPlanCard({
+  plan,
+  href,
+  isLoggedIn = false,
+  hasSubscription = false,
+  currentUserId,
+  hasAlreadyRequested = false,
+}: TravelPlanCardProps) {
   const formattedStartDate = new Intl.DateTimeFormat("en-US", {
     month: "short",
     day: "numeric",
@@ -35,6 +50,13 @@ export function TravelPlanCard({ plan, href }: TravelPlanCardProps) {
         return "bg-emerald-500/10 text-emerald-500 border-emerald-500/20";
     }
   }, [plan.travelType]);
+
+  // Don't show "Request to Join" on the user's own plans
+  const planOwnerId =
+    typeof plan.user === "string"
+      ? plan.user
+      : (plan.user as { _id: string })?._id;
+  const isOwnPlan = !!currentUserId && planOwnerId === currentUserId;
 
   const CardBody = (
     <Card className="group h-full overflow-hidden border border-white/10 bg-white/5 backdrop-blur-md transition-all duration-500 hover:-translate-y-2 hover:shadow-[0_8px_30px_rgb(0,0,0,0.12)] hover:bg-white/10 dark:bg-black/20 dark:hover:bg-black/40 relative">
@@ -83,6 +105,19 @@ export function TravelPlanCard({ plan, href }: TravelPlanCardProps) {
               ${plan.budgetMin} - ${plan.budgetMax}
             </span>
           </div>
+
+          {/* Request to Join button */}
+          {!isOwnPlan && (
+            <div className="pt-2" onClick={(e) => e.preventDefault()}>
+              <JoinRequestButton
+                plan={plan}
+                isLoggedIn={isLoggedIn}
+                hasSubscription={hasSubscription}
+                hasAlreadyRequested={hasAlreadyRequested}
+                className="w-full justify-center"
+              />
+            </div>
+          )}
         </div>
 
         {/* Hover action indicator */}

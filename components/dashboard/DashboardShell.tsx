@@ -14,11 +14,13 @@ import { sidebarConfig } from "./sidebar-config";
 interface DashboardShellProps {
   children: React.ReactNode;
   role: Role;
+  userId?: string;
 }
 
 export default function DashboardShell({
   children,
   role,
+  userId,
 }: DashboardShellProps) {
   const pathname = usePathname();
   const [isMobileOpen, setIsMobileOpen] = useState(false);
@@ -110,7 +112,10 @@ export default function DashboardShell({
           </div>
           <div className="flex-1" />
           {isUserRole && (
-            <NotificationBell onOpenPanel={() => setIsPanelOpen(true)} />
+            <NotificationBell
+              onOpenPanel={() => setIsPanelOpen(true)}
+              userId={userId}
+            />
           )}
         </header>
 
@@ -123,6 +128,7 @@ export default function DashboardShell({
         <NotificationsPanel
           isOpen={isPanelOpen}
           onClose={() => setIsPanelOpen(false)}
+          // userId={userId}
         />
       )}
     </div>

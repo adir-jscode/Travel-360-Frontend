@@ -1,13 +1,24 @@
 import { TravelPlanSearch } from "@/components/modules/travelPlan/TravelPlanSearch";
 import { Badge } from "@/components/ui/badge";
+import { getUserInfo } from "@/services/auth/getUserInfo";
 import { getAllTravelPlans } from "@/services/travelPlan/travelPlan.service";
 import { ITravelPlan } from "@/types/travelPlan.types";
+import { SUBSCRIPTION_PLAN } from "@/types/user.types";
 import { Compass, MapPin, Sparkles } from "lucide-react";
 import Image from "next/image";
 
 export default async function TravelPlansExplorePage() {
-  const result = await getAllTravelPlans();
+  const [result, user] = await Promise.all([
+    getAllTravelPlans(),
+    getUserInfo(),
+  ]);
   const plans: ITravelPlan[] = result?.success ? result.data : [];
+
+  const isLoggedIn = !!user;
+  const hasSubscription =
+    !!user?.subscription?.isActive &&
+    !!user?.subscription?.plan &&
+    user.subscription.plan !== SUBSCRIPTION_PLAN.EXPLORER;
 
   return (
     <main className="min-h-screen bg-background pb-24">
@@ -75,7 +86,12 @@ export default async function TravelPlansExplorePage() {
 
       {/* ── Search + Results ──────────────────────────────────── */}
       <section className="container mx-auto px-4 -mt-20 relative z-20">
-        <TravelPlanSearch initialPlans={plans} />
+        <TravelPlanSearch
+          initialPlans={plans}
+          isLoggedIn={isLoggedIn}
+          hasSubscription={hasSubscription}
+          currentUserId={user?._id}
+        />
       </section>
     </main>
   );
