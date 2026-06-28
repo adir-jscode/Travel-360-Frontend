@@ -67,7 +67,6 @@ export async function updateMyProfile(
 }
 
 export async function getAllUsers(query?: string): Promise<any> {
-  console.log({ query });
   try {
     const endpoint = query ? `/user?${query}` : "/user";
     const response = await serverFetch.get(endpoint, {

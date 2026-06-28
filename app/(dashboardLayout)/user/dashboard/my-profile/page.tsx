@@ -2,7 +2,15 @@ import { EditProfileForm } from "@/components/modules/user/EditProfileForm";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getUserProfile } from "@/services/user/user.service";
-import { Calendar, Mail, MapPin, Phone, Plane, Star } from "lucide-react";
+import {
+  Calendar,
+  Mail,
+  MapPin,
+  Phone,
+  Plane,
+  Star,
+  Verified,
+} from "lucide-react";
 import Image from "next/image";
 
 export default async function UserDashboardPage() {
@@ -61,6 +69,7 @@ export default async function UserDashboardPage() {
                   <h1 className="text-3xl font-bold tracking-tight">
                     {profile.name}
                   </h1>
+                  {profile.subscription?.plan && <Verified></Verified>}
                   <Badge
                     variant="default"
                     className="bg-linear-to-r from-amber-400 to-orange-500 hover:from-amber-500 hover:to-orange-600 border-none shadow-sm shadow-orange-500/20"

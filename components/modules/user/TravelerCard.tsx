@@ -1,5 +1,5 @@
 import { IUser, SUBSCRIPTION_PLAN } from "@/types/user.types";
-import { CheckCircle2, Globe, MapPin, Star, Zap } from "lucide-react";
+import { CheckCircle2, Globe, MapPin, Star, Verified } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -84,8 +84,9 @@ export function TravelerCard({ user }: TravelerCardProps) {
                   <span
                     className={`inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full border ${planStyle.class}`}
                   >
-                    <Zap className="w-2.5 h-2.5" />
-                    {planStyle.label}
+                    {/* <Zap className="w-2.5 h-2.5" />
+                    {planStyle.label} */}
+                    <Verified />
                   </span>
                 )}
               </div>
