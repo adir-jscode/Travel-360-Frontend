@@ -12,7 +12,7 @@ import {
   X,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { toast } from "sonner";
 
@@ -39,6 +39,13 @@ export function JoinRequestButton({
   );
   const [message, setMessage] = useState("");
   const [error, setError] = useState<string | null>(null);
+  // FIX: track client-side mount so createPortal only runs after hydration
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    const id = setTimeout(() => setMounted(true), 0);
+    return () => clearTimeout(id);
+  }, []);
 
   const destination = plan.destination.city
     ? `${plan.destination.city}, ${plan.destination.country}`
@@ -91,7 +98,6 @@ export function JoinRequestButton({
     setError(null);
   };
 
-  // ── Sent state ────────────────────────────────────────────────────────
   if (state === "sent") {
     return (
       <motion.div
@@ -105,12 +111,10 @@ export function JoinRequestButton({
     );
   }
 
-  // ── Modal content (rendered via portal) ──────────────────────────────
   const modalContent = (
     <AnimatePresence>
       {(state === "confirming" || state === "loading") && (
         <>
-          {/* Backdrop */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -118,8 +122,6 @@ export function JoinRequestButton({
             onClick={handleCancel}
             className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm"
           />
-
-          {/* Modal */}
           <motion.div
             initial={{ opacity: 0, scale: 0.95, y: 24 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -128,7 +130,6 @@ export function JoinRequestButton({
             className="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none"
           >
             <div className="w-full max-w-md rounded-3xl border border-border/60 bg-card/95 backdrop-blur-xl p-6 shadow-2xl pointer-events-auto">
-              {/* Header */}
               <div className="flex items-start justify-between mb-5">
                 <div className="flex items-center gap-3">
                   <div className="w-11 h-11 rounded-2xl bg-primary/10 flex items-center justify-center">
@@ -154,13 +155,11 @@ export function JoinRequestButton({
                 </button>
               </div>
 
-              {/* Description */}
               <p className="text-sm text-muted-foreground mb-4 leading-relaxed">
                 Send a join request to the trip organizer. A personal message
                 helps you get accepted faster!
               </p>
 
-              {/* Message textarea */}
               <div className="space-y-2 mb-5">
                 <label className="block text-xs font-semibold uppercase tracking-widest text-muted-foreground">
                   Message (optional)
@@ -175,10 +174,8 @@ export function JoinRequestButton({
                 />
               </div>
 
-              {/* Error */}
               {error && <p className="text-xs text-rose-500 mb-4">{error}</p>}
 
-              {/* Actions */}
               <div className="flex gap-3">
                 <button
                   onClick={handleCancel}
@@ -214,7 +211,6 @@ export function JoinRequestButton({
 
   return (
     <div className={`flex flex-col gap-0 ${className}`}>
-      {/* Idle — main CTA button */}
       {state === "idle" && (
         <motion.button
           layout
@@ -228,9 +224,8 @@ export function JoinRequestButton({
         </motion.button>
       )}
 
-      {/* Portal: renders modal at document.body, completely outside the card grid */}
-      {typeof document !== "undefined" &&
-        createPortal(modalContent, document.body)}
+      {/* Only render portal after client mount to avoid SSR/hydration mismatch */}
+      {mounted && createPortal(modalContent, document.body)}
     </div>
   );
 }

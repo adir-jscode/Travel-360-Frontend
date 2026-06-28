@@ -1,6 +1,9 @@
 "use client";
 
-import { respondToJoinRequest } from "@/services/joinRequest/joinRequest.service";
+import {
+  getIncomingRequests,
+  respondToJoinRequest,
+} from "@/services/joinRequest/joinRequest.service";
 import {
   IJoinRequest,
   INotification,
@@ -69,21 +72,14 @@ export function useNotifications(userId?: string) {
   const socketRef = useRef<Socket | null>(null);
 
   // ── Fetch incoming join requests ───────────────────────────────────────
+  // Call the server action directly — it already handles auth via serverFetch,
+  // so no cookie/header forwarding needed. The /api/join-request/incoming
+  // route handler is no longer used and can be deleted.
   const fetchRequests = useCallback(async () => {
-    // FIX 1: Guard was already here — but now userId is actually passed in
-    // from NotificationBell, so this will run correctly.
-    console.log({ userId });
     if (!userId) return;
     setLoading(true);
     try {
-      const res = await fetch("/api/join-requests/incoming", {
-        cache: "no-store",
-        // FIX 2: Browser fetch from a client component automatically sends
-        // cookies, so credentials: "include" ensures the auth cookie is sent.
-        credentials: "include",
-      });
-      if (!res.ok) return;
-      const data = await res.json();
+      const data = await getIncomingRequests();
       if (data.success && Array.isArray(data.data)) {
         const all: IJoinRequest[] = data.data;
         setPending(all.filter((r) => r.status === JoinRequestStatus.PENDING));
