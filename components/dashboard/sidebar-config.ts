@@ -7,6 +7,7 @@ import {
   MapPinned,
   Settings,
   Shield,
+  Ticket,
   User,
   UserCog,
   Users,
@@ -16,6 +17,7 @@ export type SidebarItem = {
   name: string;
   href: string;
   icon: any;
+  badge?: string;
 };
 
 export const sidebarConfig: Record<Role, SidebarItem[]> = {
@@ -30,16 +32,11 @@ export const sidebarConfig: Record<Role, SidebarItem[]> = {
       href: "/user/travel-plans",
       icon: Map,
     },
-    // {
-    //   name: "Explore",
-    //   href: "/travel-plans",
-    //   icon: Compass,
-    // },
-    // {
-    //   name: "Settings",
-    //   href: "/user/settings",
-    //   icon: Settings,
-    // },
+    {
+      name: "Trip Requests",
+      href: "/user/dashboard/trip-requests",
+      icon: Ticket,
+    },
   ],
 
   GUIDE: [
