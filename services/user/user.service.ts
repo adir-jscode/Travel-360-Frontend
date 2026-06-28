@@ -67,12 +67,14 @@ export async function updateMyProfile(
 }
 
 export async function getAllUsers(query?: string): Promise<any> {
+  console.log({ query });
   try {
     const endpoint = query ? `/user?${query}` : "/user";
     const response = await serverFetch.get(endpoint, {
       next: { tags: ["users-list"] },
     });
-    return await response.json();
+    const result = await response.json();
+    return result;
   } catch (error: any) {
     return { success: false, message: error.message };
   }
@@ -94,6 +96,18 @@ export async function deleteUser(id: string): Promise<any> {
 export async function getUserProfile(id?: string): Promise<IUser | null> {
   try {
     const endpoint = id ? `/user/me/${id}` : "/user/me";
+    const response = await serverFetch.get(endpoint, {
+      next: { tags: ["user-info"] },
+    });
+    const result = await response.json();
+    return result.success ? result.data : null;
+  } catch {
+    return null;
+  }
+}
+export async function getUserProfilePublic(id?: string): Promise<IUser | null> {
+  try {
+    const endpoint = id ? `/user/profile/${id}` : "/user/me";
     const response = await serverFetch.get(endpoint, {
       next: { tags: ["user-info"] },
     });

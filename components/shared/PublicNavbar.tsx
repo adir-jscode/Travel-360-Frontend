@@ -56,9 +56,8 @@ const PublicNavbar = async () => {
       : null;
 
   const navItems = [
-    { href: "/explore", label: "Explore Travelers" },
-    { href: "/travel-plans", label: "Travel Plans" },
-    { href: "#", label: "Find Travel Buddy" },
+    { href: "/explore", label: "Find Travel Buddy" },
+    { href: "/travel-plans", label: "Search Travel Plans" },
     { href: "/pricing", label: "Pricing" },
   ];
 
