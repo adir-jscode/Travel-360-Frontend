@@ -20,7 +20,7 @@ export default async function TravelPlanDetailPage({
 }) {
   const { id } = await params;
   const plan = await getTravelPlanById(id);
-
+  console.log("Dynamic page rendered:", id);
   if (!plan) {
     return notFound();
   }

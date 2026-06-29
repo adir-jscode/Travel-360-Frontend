@@ -3,7 +3,6 @@
 
 import { serverFetch } from "@/lib/server-fetch";
 import { zodValidator } from "@/lib/zodValidator";
-import { ITravelPlan } from "@/types/travelPlan.types";
 import {
   createAiTravelPlanZodSchema,
   createTravelPlanZodSchema,
@@ -215,17 +214,33 @@ export async function generateAiTravelPlan(
   }
 }
 
-export async function getTravelPlanById(
-  id: string,
-): Promise<ITravelPlan | null> {
+// export async function getTravelPlanById(
+//   id: string,
+// ): Promise<ITravelPlan | null> {
+//   try {
+//     const response = await serverFetch.get(`/travel-plan/travel-plans/${id}`, {
+//       next: { tags: ["travel-plans"] },
+//     });
+//     const result = await response.json();
+
+//     return result.success ? result.data : null;
+//   } catch {
+//     return null;
+//   }
+// }
+export async function getTravelPlanById(id: string) {
   try {
-    const response = await serverFetch.get(`/travel-plan/travel-plans/${id}`, {
-      next: { tags: ["travel-plans"] },
-    });
+    const response = await serverFetch.get(`/travel-plan/travel-plans/${id}`);
+
+    console.log("Response status:", response.status);
+
     const result = await response.json();
 
+    console.log("Result:", result);
+
     return result.success ? result.data : null;
-  } catch {
-    return null;
+  } catch (error) {
+    console.error("getTravelPlanById error:", error);
+    throw error; // Don't return null while debugging
   }
 }

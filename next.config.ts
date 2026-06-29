@@ -9,6 +9,7 @@ const nextConfig: NextConfig = {
       "i.pravatar.cc",
       "res.cloudinary.com",
       "lh3.googleusercontent.com",
+      "images.remotePatterns",
     ],
   },
 };
