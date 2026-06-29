@@ -9,7 +9,6 @@ import {
   Shield,
   Ticket,
   User,
-  UserCog,
   Users,
 } from "lucide-react";
 
@@ -77,16 +76,6 @@ export const sidebarConfig: Record<Role, SidebarItem[]> = {
       name: "Travel Plans",
       href: "/admin/travel-plans",
       icon: Map,
-    },
-    {
-      name: "Guides",
-      href: "/admin/guides",
-      icon: UserCog,
-    },
-    {
-      name: "Settings",
-      href: "/admin/settings",
-      icon: Settings,
     },
   ],
 

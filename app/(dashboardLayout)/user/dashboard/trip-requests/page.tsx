@@ -1,6 +1,7 @@
 "use client";
 
 import { useNotifications } from "@/hooks/useNotifications";
+import { useUserId } from "@/hooks/useUserId";
 import { IJoinRequest, JoinRequestStatus } from "@/types/joinRequest.types";
 import { AnimatePresence, motion } from "framer-motion";
 import {
@@ -390,6 +391,7 @@ function EmptyState({ tab }: { tab: Tab }) {
 
 /* ─────────────────── Main Page ──────────────────── */
 export default function TripRequestsPage() {
+  const userId = useUserId();
   const {
     accepted,
     rejected,
@@ -398,7 +400,7 @@ export default function TripRequestsPage() {
     acceptRequest,
     rejectRequest,
     refetch,
-  } = useNotifications();
+  } = useNotifications(userId);
   const [tab, setTab] = useState<Tab>("pending");
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState<SortKey>("newest");

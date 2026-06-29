@@ -128,7 +128,7 @@ export default function DashboardShell({
         <NotificationsPanel
           isOpen={isPanelOpen}
           onClose={() => setIsPanelOpen(false)}
-          // userId={userId}
+          userId={userId}
         />
       )}
     </div>

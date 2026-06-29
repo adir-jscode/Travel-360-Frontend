@@ -9,13 +9,15 @@ import { JoinRequestCard } from "./JoinRequestCard";
 interface NotificationsPanelProps {
   isOpen: boolean;
   onClose: () => void;
+  userId?: string;
 }
 
 export function NotificationsPanel({
   isOpen,
   onClose,
+  userId,
 }: NotificationsPanelProps) {
-  const { pending, acceptRequest, rejectRequest } = useNotifications();
+  const { pending, acceptRequest, rejectRequest } = useNotifications(userId);
 
   return (
     <AnimatePresence>

@@ -24,12 +24,13 @@ import Signout from "./Signout";
 const PublicNavbar = async () => {
   // Google session (NextAuth)
   const session = await auth();
+  const URL = process.env.NEXT_PUBLIC_URL || "http://localhost:3000/api";
 
   // If the user just logged in via Google, sync their tokens into cookies
   // so the rest of the app (serverFetch, middleware) can use them.
   if (session?.accessToken) {
     //await syncGoogleTokensToCookies();
-    await fetch("http://localhost:3000/api/auth/sync-google-tokens", {
+    await fetch(`${URL}/auth/sync-google-tokens`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       cache: "no-store",

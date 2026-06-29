@@ -7,11 +7,6 @@ import Image from "next/image";
 
 export default async function UserDashboardPage() {
   const profile = await getUserProfile();
-  // await fetch("http://localhost:3000/api/auth/sync-google-tokens", {
-  //   method: "POST",
-  //   headers: { "Content-Type": "application/json" },
-  //   cache: "no-store",
-  // });
 
   if (!profile) {
     return (

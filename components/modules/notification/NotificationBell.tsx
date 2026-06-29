@@ -9,7 +9,7 @@ import { useEffect, useRef, useState } from "react";
 
 interface NotificationBellProps {
   onOpenPanel?: () => void;
-  userId?: string; // Fix 1: added missing prop
+  userId?: string;
 }
 
 function timeAgo(dateStr: string): string {
@@ -22,30 +22,25 @@ function timeAgo(dateStr: string): string {
   return `${Math.floor(hrs / 24)}d ago`;
 }
 
-export function NotificationBell({ onOpenPanel }: NotificationBellProps) {
-  const { liveNotifications, unreadCount, markAllRead } = useNotifications();
+export function NotificationBell({
+  onOpenPanel,
+  userId,
+}: NotificationBellProps) {
+  const { liveNotifications, unreadCount, markAllRead } =
+    useNotifications(userId);
   const [isOpen, setIsOpen] = useState(false);
   const [newNotifId, setNewNotifId] = useState<string | null>(null);
   const prevCountRef = useRef(unreadCount);
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Fix 2: defer setState with setTimeout to avoid synchronous setState in effect
+  // Detect new notification arrival
   useEffect(() => {
     if (unreadCount > prevCountRef.current) {
       const newest = liveNotifications[0];
-      if (newest) {
-        timeoutRef.current = setTimeout(() => {
-          setNewNotifId(newest._id);
-        }, 0);
-        setTimeout(() => setNewNotifId(null), 4000);
-      }
+      if (newest) setNewNotifId(newest._id);
+      setTimeout(() => setNewNotifId(null), 4000);
     }
     prevCountRef.current = unreadCount;
-
-    return () => {
-      if (timeoutRef.current) clearTimeout(timeoutRef.current);
-    };
   }, [unreadCount, liveNotifications]);
 
   // Close on outside click
@@ -85,7 +80,7 @@ export function NotificationBell({ onOpenPanel }: NotificationBellProps) {
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
               exit={{ scale: 0 }}
-              className="absolute -top-1 -right-1 min-w-4.5 h-4.5 flex items-center justify-center rounded-full bg-primary text-primary-foreground text-[10px] font-bold px-1 shadow-md"
+              className="absolute -top-1 -right-1 min-w-[18px] h-[18px] flex items-center justify-center rounded-full bg-primary text-primary-foreground text-[10px] font-bold px-1 shadow-md"
             >
               {unreadCount > 9 ? "9+" : unreadCount}
             </motion.span>
@@ -236,7 +231,7 @@ function LiveToast({
       animate={{ opacity: 1, x: 0, scale: 1 }}
       exit={{ opacity: 0, x: 60, scale: 0.95 }}
       transition={{ type: "spring", stiffness: 300, damping: 30 }}
-      className="fixed bottom-6 right-6 z-9999 w-80 rounded-2xl border border-border/60 bg-card/95 backdrop-blur-xl shadow-elegant overflow-hidden"
+      className="fixed bottom-6 right-6 z-[9999] w-80 rounded-2xl border border-border/60 bg-card/95 backdrop-blur-xl shadow-elegant overflow-hidden"
     >
       {/* Progress bar */}
       <motion.div
