@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use server";
 
@@ -5,7 +6,8 @@ import { serverFetch } from "@/lib/server-fetch";
 import { zodValidator } from "@/lib/zodValidator";
 import { registerValidationZodSchema } from "@/zod/auth.validation";
 import { redirect } from "next/navigation";
-
+import z from "zod";
+type RegisterForm = z.infer<typeof registerValidationZodSchema>;
 export const registerUser = async (
   _currentState: any,
   formData: FormData,
@@ -25,8 +27,8 @@ export const registerUser = async (
       return { success: false, errors: validated.errors };
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { confirmPassword: _confirm, ...registerPayload } = validated.data!;
+    const { confirmPassword: _confirm, ...registerPayload } =
+      validated.data as RegisterForm;
 
     const res = await serverFetch.post("/user/register", {
       body: JSON.stringify(registerPayload),
