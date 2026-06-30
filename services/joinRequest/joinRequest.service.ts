@@ -10,7 +10,6 @@ export async function sendJoinRequest(
   message?: string,
 ): Promise<any> {
   try {
-    console.log({ travelPlanId });
     const response = await serverFetch.post(`/join-request/${travelPlanId}`, {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ message }),

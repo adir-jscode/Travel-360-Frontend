@@ -512,7 +512,7 @@ export default function TripRequestsComponent({
         <StatCard
           icon={<Check className="w-6 h-6 text-emerald-600" />}
           value={accepted.length}
-          label="Travellers accepted"
+          label="Travelers accepted"
           accent="border-emerald-500/20 text-emerald-600"
         />
         <StatCard

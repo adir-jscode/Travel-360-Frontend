@@ -34,9 +34,7 @@ export function JoinRequestButton({
   className = "",
 }: JoinRequestButtonProps) {
   const router = useRouter();
-  const [state, setState] = useState<ButtonState>(
-    hasAlreadyRequested ? "sent" : "idle",
-  );
+  const [state, setState] = useState<ButtonState>("idle");
   const [message, setMessage] = useState("");
   const [error, setError] = useState<string | null>(null);
   // FIX: track client-side mount so createPortal only runs after hydration
@@ -52,6 +50,7 @@ export function JoinRequestButton({
     : plan.destination.country;
 
   const handleClick = () => {
+    if (hasAlreadyRequested) return;
     if (!isLoggedIn) {
       router.push(`/login?redirect=/travel-plans`);
       return;
@@ -214,10 +213,11 @@ export function JoinRequestButton({
       {state === "idle" && (
         <motion.button
           layout
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
+          whileHover={hasAlreadyRequested ? undefined : { scale: 1.02 }}
+          whileTap={hasAlreadyRequested ? undefined : { scale: 0.98 }}
           onClick={handleClick}
-          className="flex items-center gap-2.5 px-6 py-3 rounded-2xl bg-linear-to-r from-primary to-amber-500 text-primary-foreground font-semibold text-sm shadow-glow hover:shadow-lg transition-all duration-200"
+          disabled={hasAlreadyRequested}
+          className="flex items-center gap-2.5 px-6 py-3 rounded-2xl bg-linear-to-r from-primary to-amber-500 text-primary-foreground font-semibold text-sm shadow-glow hover:shadow-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none disabled:hover:shadow-none"
         >
           <UserPlus className="w-4 h-4" />
           {isLoggedIn ? "Request to Join" : "Sign in to Join"}
