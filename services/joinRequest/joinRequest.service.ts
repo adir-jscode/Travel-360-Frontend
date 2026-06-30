@@ -2,6 +2,7 @@
 "use server";
 
 import { serverFetch } from "@/lib/server-fetch";
+import { IJoinRequest } from "@/types/joinRequest.types";
 import { revalidateTag } from "next/cache";
 
 export async function sendJoinRequest(
@@ -22,16 +23,26 @@ export async function sendJoinRequest(
     return { success: false, message: error.message };
   }
 }
-
-export async function getIncomingRequests(): Promise<any> {
+export interface IncomingRequestsResponse {
+  success: boolean;
+  statusCode: number;
+  message: string;
+  data: IJoinRequest[];
+}
+export async function getIncomingRequests(): Promise<IncomingRequestsResponse> {
   try {
     const response = await serverFetch.get("/join-request/incoming", {
       next: { tags: ["join-requests"] },
     });
-    console.log({ response });
+
     return await response.json();
   } catch (error: any) {
-    return { success: false, message: error.message, data: [] };
+    return {
+      statusCode: 200,
+      success: false,
+      message: error.message,
+      data: [],
+    };
   }
 }
 
@@ -59,6 +70,7 @@ export async function respondToJoinRequest(
       },
     );
     const result = await response.json();
+    console.log({ result });
     if (result.success) revalidateTag("join-requests", "max");
     return result;
   } catch (error: any) {

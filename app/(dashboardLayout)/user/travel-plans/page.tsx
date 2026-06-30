@@ -4,15 +4,13 @@ import { EditTravelPlanModal } from "@/components/modules/travelPlan/EditTravelP
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { getAllTravelPlans } from "@/services/travelPlan/travelPlan.service";
+import { getMyTravelPlans } from "@/services/travelPlan/travelPlan.service";
 import { ITravelPlan } from "@/types/travelPlan.types";
 import { Compass, Map, Plane } from "lucide-react";
 import Link from "next/link";
 
 export default async function UserTravelPlansPage() {
-  // Ideally, this would fetch only the user's travel plans.
-  // Assuming getAllTravelPlans returns all for now, or the backend scopes it by token.
-  const result = await getAllTravelPlans();
+  const result = await getMyTravelPlans();
   const plans: ITravelPlan[] = result?.success ? result.data : [];
 
   return (
