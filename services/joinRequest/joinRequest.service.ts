@@ -15,7 +15,7 @@ export async function sendJoinRequest(
       body: JSON.stringify({ message }),
     });
     const result = await response.json();
-    console.log({ result });
+
     if (result.success) revalidateTag("join-requests", "max");
     return result;
   } catch (error: any) {
@@ -69,7 +69,7 @@ export async function respondToJoinRequest(
       },
     );
     const result = await response.json();
-    console.log({ result });
+
     if (result.success) revalidateTag("join-requests", "max");
     return result;
   } catch (error: any) {

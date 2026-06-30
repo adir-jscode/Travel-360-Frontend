@@ -12,15 +12,7 @@ export async function GET(request: NextRequest) {
   const cookieHeader = allCookies.map((c) => `${c.name}=${c.value}`).join("; ");
 
   // ── DEBUG: see exactly what cookies/auth we have ──────────────────────
-  console.log(
-    "[incoming] cookie names:",
-    allCookies.map((c) => c.name),
-  );
-  console.log(
-    "[incoming] Authorization from browser:",
-    request.headers.get("authorization"),
-  );
-  console.log("[incoming] hitting:", `${BACKEND_URL}/join-request/incoming`);
+
   // ─────────────────────────────────────────────────────────────────────
 
   try {
@@ -36,9 +28,7 @@ export async function GET(request: NextRequest) {
       cache: "no-store",
     });
 
-    console.log("[incoming] backend status:", res.status);
     const data = await res.json();
-    console.log("[incoming] backend data:", JSON.stringify(data, null, 2));
 
     return NextResponse.json(data, { status: res.status });
   } catch (error: any) {

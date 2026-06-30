@@ -20,7 +20,6 @@ export default function ResetPasswordForm({
   id,
   token,
 }: ResetPasswordFormProps) {
-  console.log({ token });
   const router = useRouter();
   const [state, formAction, isPending] = useActionState(resetPassword, null);
   const [showPassword, setShowPassword] = useState(false);

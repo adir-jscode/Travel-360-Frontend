@@ -48,7 +48,6 @@ export async function updateMyProfile(
     });
 
     const result = await response.json();
-    console.log({ result, uploadFormData });
 
     if (result.success) {
       revalidateTag("user-info", "max");

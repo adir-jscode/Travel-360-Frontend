@@ -148,7 +148,7 @@ export async function forgotPassword(_prevState: any, formData: FormData) {
     });
 
     const result = await response.json();
-    console.log({ result });
+
     if (!result.success) {
       throw new Error(result.message || "Failed to send reset link");
     }
@@ -218,7 +218,6 @@ export async function changePassword(_prevState: any, formData: FormData) {
     newPassword: formData.get("newPassword") as string,
     confirmPassword: formData.get("confirmPassword") as string,
   };
-  console.log("before validation", validationPayload);
 
   const validatedPayload = zodValidator(
     validationPayload,

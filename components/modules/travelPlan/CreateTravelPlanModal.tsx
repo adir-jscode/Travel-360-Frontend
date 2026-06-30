@@ -54,7 +54,6 @@ export function CreateTravelPlanModal() {
   const [itinerary, setItinerary] = useState<ItineraryDay[]>([]);
 
   const [state, formAction, isPending] = useActionState(createTravelPlan, null);
-  console.log({ state });
 
   const days = useMemo(() => {
     if (!startDate || !endDate) return "";
@@ -69,7 +68,6 @@ export function CreateTravelPlanModal() {
   useEffect(() => {
     if (!state) return;
     if (!state.success) {
-      console.log("State false");
       if (state.message) toast.error(state.message);
       return;
     }

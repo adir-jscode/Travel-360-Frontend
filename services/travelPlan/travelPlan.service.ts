@@ -42,7 +42,6 @@ export async function createTravelPlan(
   formData: FormData,
 ): Promise<any> {
   try {
-    console.log({ formData });
     const days = Number(formData.get("days"));
     const itinerary = JSON.parse((formData.get("itinerary") as string) || "[]");
     const budgetMin = formData.get("budgetMin") as string;
@@ -62,14 +61,12 @@ export async function createTravelPlan(
       visibility: formData.get("visibility") as string,
       itinerary: itinerary,
     };
-    console.log(payload);
 
     const validated = zodValidator(payload, createTravelPlanZodSchema);
-    console.log({ validated });
+
     if (!validated.success) {
       return { success: false, errors: validated.errors };
     }
-    console.log({ validated });
 
     const response = await serverFetch.post("/travel-plan/travel-plans", {
       headers: { "Content-Type": "application/json" },
@@ -77,7 +74,7 @@ export async function createTravelPlan(
     });
 
     const result = await response.json();
-    console.log({ result });
+
     if (result.success) revalidateTag("travel-plans", "max");
     return result;
   } catch (error: any) {
@@ -194,7 +191,6 @@ export async function generateAiTravelPlan(
       travelType: formData.get("travelType") as string,
       visibility: formData.get("visibility") as string,
     };
-    console.log({ payload });
 
     const validated = zodValidator(payload, createAiTravelPlanZodSchema);
     if (!validated.success) {
@@ -232,11 +228,7 @@ export async function getTravelPlanById(id: string) {
   try {
     const response = await serverFetch.get(`/travel-plan/travel-plans/${id}`);
 
-    console.log("Response status:", response.status);
-
     const result = await response.json();
-
-    console.log("Result:", result);
 
     return result.success ? result.data : null;
   } catch (error) {
