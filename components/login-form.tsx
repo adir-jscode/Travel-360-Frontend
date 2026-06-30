@@ -113,7 +113,7 @@ export default function LoginForm({ redirect }: LoginFormProps) {
               Password
             </FieldLabel>
             <Link
-              href="/forgot-password"
+              href="/forget-password"
               className="text-xs text-primary hover:underline underline-offset-4 font-medium"
             >
               Forgot password?

@@ -10,7 +10,6 @@ import {
   resetPasswordSchema,
 } from "@/zod/auth.validation";
 import { parse } from "cookie";
-import { revalidateTag } from "next/cache";
 import { deleteCookie, getCookie, setCookie } from "./tokenHandlers";
 
 export async function getNewAccessToken() {
@@ -149,7 +148,7 @@ export async function forgotPassword(_prevState: any, formData: FormData) {
     });
 
     const result = await response.json();
-
+    console.log({ result });
     if (!result.success) {
       throw new Error(result.message || "Failed to send reset link");
     }
@@ -168,6 +167,8 @@ export async function forgotPassword(_prevState: any, formData: FormData) {
 
 export async function resetPassword(_prevState: any, formData: FormData) {
   const validationPayload = {
+    id: formData.get("id") as string,
+    token: formData.get("token") as string,
     newPassword: formData.get("newPassword") as string,
     confirmPassword: formData.get("confirmPassword") as string,
   };
@@ -182,33 +183,15 @@ export async function resetPassword(_prevState: any, formData: FormData) {
     };
   }
 
-  const token = formData.get("token") as string;
-  const email = formData.get("email") as string;
-  const isEmailReset = formData.get("isEmailReset") === "true";
-
   try {
-    let response;
-
-    if (isEmailReset) {
-      if (!email || !token) {
-        return { success: false, message: "Invalid reset link" };
-      }
-      response = await serverFetch.post("/auth/reset-password", {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          email,
-          password: validationPayload.newPassword,
-        }),
-      });
-    } else {
-      response = await serverFetch.post("/auth/reset-password", {
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ password: validationPayload.newPassword }),
-      });
-    }
+    const response = await serverFetch.post("/auth/reset-password", {
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        id: validationPayload.id,
+        token: validationPayload.token,
+        newPassword: validationPayload.newPassword,
+      }),
+    });
 
     const result = await response.json();
 
@@ -216,13 +199,9 @@ export async function resetPassword(_prevState: any, formData: FormData) {
       throw new Error(result.message || "Password reset failed");
     }
 
-    if (result.success) {
-      revalidateTag("user-info", "max");
-    }
-
     return {
       success: true,
-      message: "Password reset successfully!",
+      message: "Password reset successfully! You can now log in.",
       redirectToLogin: true,
     };
   } catch (error: any) {
@@ -239,12 +218,12 @@ export async function changePassword(_prevState: any, formData: FormData) {
     newPassword: formData.get("newPassword") as string,
     confirmPassword: formData.get("confirmPassword") as string,
   };
+  console.log("before validation", validationPayload);
 
   const validatedPayload = zodValidator(
     validationPayload,
     changePasswordSchema,
   );
-
   if (!validatedPayload.success) {
     return {
       success: false,
@@ -254,7 +233,7 @@ export async function changePassword(_prevState: any, formData: FormData) {
   }
 
   try {
-    const response = await serverFetch.post("/auth/reset-password", {
+    const response = await serverFetch.post("/auth/change-password", {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         oldPassword: validationPayload.oldPassword,

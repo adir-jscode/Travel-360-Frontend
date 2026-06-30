@@ -3,6 +3,7 @@ import { Role } from "@/types/user.types";
 import {
   Compass,
   LayoutDashboard,
+  Lock,
   Map,
   MapPinned,
   Settings,
@@ -35,6 +36,11 @@ export const sidebarConfig: Record<Role, SidebarItem[]> = {
       name: "Trip Requests",
       href: "/user/dashboard/trip-requests",
       icon: Ticket,
+    },
+    {
+      name: "Change Password",
+      href: "/user/dashboard/security",
+      icon: Lock,
     },
   ],
 
@@ -76,6 +82,11 @@ export const sidebarConfig: Record<Role, SidebarItem[]> = {
       name: "Travel Plans",
       href: "/admin/travel-plans",
       icon: Map,
+    },
+    {
+      name: "Change Password",
+      href: "/admin/dashboard/security",
+      icon: Lock,
     },
   ],
 
