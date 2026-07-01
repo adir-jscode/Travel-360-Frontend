@@ -6,17 +6,17 @@ import Link from "next/link";
 
 export function TopTravelers() {
   return (
-    <section className="mx-auhref max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
+    <section className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
       <SectionHeader
         eyebrow="Meet the community"
-        title="hrefp-rated travelers"
+        title="Top-rated travelers"
         subtitle="Verified explorers your matches will love."
       />
       <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {travelers.slice(0, 6).map((t) => (
           <Link
             key={t.id}
-            href="/profile/$id"
+            href={`/profile/${t.id}`}
             className="group rounded-3xl border border-border bg-card p-6 shadow-soft transition-all hover:-translate-y-1 hover:shadow-elegant"
           >
             <div className="flex items-start gap-4">
@@ -36,7 +36,7 @@ export function TopTravelers() {
                   {t.location}
                 </p>
                 <div className="mt-1 flex items-center gap-1 text-xs font-semibold">
-                  <Star className="h-3.5 w-3.5 fill-yellow-400 text-yellow-400" />
+                  <Star className="h-3.5 w-3.5 fill-amber-500 text-amber-500" />
                   {t.rating}{" "}
                   <span className="text-muted-foreground">
                     ({t.reviewCount})

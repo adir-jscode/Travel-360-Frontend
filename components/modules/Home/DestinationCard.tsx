@@ -30,15 +30,15 @@ export function DestinationCard({
       {/* Content */}
       <div className="absolute bottom-0 left-0 w-full p-6 text-white">
         <div className="mb-2 flex items-center gap-2">
-          <MapPin className="h-4 w-4 text-orange-400" />
-          <span className="text-sm font-medium uppercase tracking-wider text-orange-300">
+          <MapPin className="h-4 w-4 text-primary-glow" />
+          <span className="text-sm font-medium uppercase tracking-wider text-primary-glow">
             {location}
           </span>
         </div>
         <h3 className="mb-2 text-3xl font-extrabold leading-tight">{title}</h3>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-1">
-            <Star className="h-5 w-5 fill-yellow-400 text-yellow-400" />
+            <Star className="h-5 w-5 fill-amber-400 text-amber-400" />
             <span className="font-bold">{rating}</span>
           </div>
           <span className="rounded-full bg-white/20 px-4 py-1 text-sm font-bold backdrop-blur-sm">

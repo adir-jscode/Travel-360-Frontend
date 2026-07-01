@@ -11,7 +11,6 @@ import {
   ChevronDown,
   LayoutDashboard,
   Menu,
-  Plane,
   Settings,
   User,
 } from "lucide-react";
@@ -19,6 +18,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Button } from "../ui/button";
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "../ui/sheet";
+import { BrandMark } from "./BrandMark";
 import Signout from "./Signout";
 
 const PublicNavbar = async () => {
@@ -66,10 +66,7 @@ const PublicNavbar = async () => {
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur dark:bg-background/95">
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
         {/* Logo */}
-        <Link href="/" className="flex items-center space-x-2">
-          <Plane className="h-6 w-6 text-orange-500" />
-          <span className="text-xl font-bold text-primary">Travel360</span>
-        </Link>
+        <BrandMark />
 
         {/* Desktop Nav */}
         <nav className="hidden md:flex items-center space-x-6 text-sm font-medium">
