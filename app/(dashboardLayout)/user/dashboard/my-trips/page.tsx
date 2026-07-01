@@ -4,8 +4,13 @@ import { getMyTrips } from "@/services/trip/trip.service";
 
 export default async function MyTripsPage() {
   const [result, currentUser] = await Promise.all([
-    getMyTrips(),
-    getCurrentUser(),
+    getMyTrips().catch(() => ({
+      success: false as const,
+      statusCode: 500,
+      message: "Failed to load trips",
+      data: [],
+    })),
+    getCurrentUser().catch(() => null),
   ]);
 
   const trips = result.success ? result.data : [];

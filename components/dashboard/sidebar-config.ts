@@ -30,7 +30,7 @@ export const sidebarConfig: Record<Role, SidebarItem[]> = {
     },
     {
       name: "Travel Plans",
-      href: "/user/travel-plans",
+      href: "/user/dashboard/travel-plans",
       icon: Map,
     },
     {

@@ -1,7 +1,7 @@
 "use client";
 
 import { getInitials } from "@/lib/helpers";
-import { ITrip, ITripPerson } from "@/types/trip.types";
+import { ITrip, ITripPerson, TripStatus } from "@/types/trip.types";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   Calendar,
@@ -18,14 +18,18 @@ import {
   Sparkles,
   Star,
   Users,
+  XCircle,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useMemo, useState } from "react";
+import { TripPhotoUpload } from "./TripPhotoUpload";
+import { TripStatusActions } from "./TripStatusActions";
 
-type StatusFilter = "all" | "upcoming" | "ongoing" | "completed";
+type StatusFilter = "all" | "upcoming" | "ongoing" | "completed" | "cancelled";
 type SortKey = "soonest" | "newest" | "destination";
-type TripStatus = "upcoming" | "ongoing" | "completed";
+/** Status derived purely from the travel plan's start/end dates. */
+type DateStatus = "upcoming" | "ongoing" | "completed";
 
 /* ─────────────────── Date helpers ──────────────────── */
 function formatDateRange(start: string, end: string): string {
@@ -42,7 +46,7 @@ function formatDateRange(start: string, end: string): string {
   return `${s} – ${e}`;
 }
 
-function getTripStatus(startDate: string, endDate: string): TripStatus {
+function getDateStatus(startDate: string, endDate: string): DateStatus {
   const now = Date.now();
   const start = new Date(startDate).getTime();
   const end = new Date(endDate).getTime();
@@ -51,8 +55,22 @@ function getTripStatus(startDate: string, endDate: string): TripStatus {
   return "ongoing";
 }
 
+/**
+ * Resolves the status shown on a trip card: the host's explicit
+ * "cancelled"/"completed" choice always wins, otherwise fall back to the
+ * date-derived status.
+ */
+function resolveDisplayStatus(
+  persisted: TripStatus | undefined,
+  dateStatus: DateStatus,
+): Exclude<StatusFilter, "all"> {
+  if (persisted === TripStatus.CANCELLED) return "cancelled";
+  if (persisted === TripStatus.COMPLETED) return "completed";
+  return dateStatus;
+}
+
 function getCountdownLabel(
-  status: TripStatus,
+  status: DateStatus,
   startDate: string,
   endDate: string,
 ): string {
@@ -78,7 +96,7 @@ function getCountdownLabel(
 }
 
 const STATUS_STYLES: Record<
-  TripStatus,
+  Exclude<StatusFilter, "all">,
   { label: string; dot: string; badge: string; stripe: string }
 > = {
   upcoming: {
@@ -98,6 +116,12 @@ const STATUS_STYLES: Record<
     dot: "bg-muted-foreground",
     badge: "bg-muted text-muted-foreground border-border",
     stripe: "from-slate-300 to-slate-400",
+  },
+  cancelled: {
+    label: "Cancelled",
+    dot: "bg-rose-500",
+    badge: "bg-rose-500/10 text-rose-600 border-rose-500/20",
+    stripe: "from-rose-400 to-rose-500",
   },
 };
 
@@ -199,13 +223,25 @@ function TripCard({
   currentUserId?: string;
 }) {
   const [showItinerary, setShowItinerary] = useState(false);
+  const [persistedStatus, setPersistedStatus] = useState<
+    TripStatus | undefined
+  >(trip.status);
   const plan = trip.travelPlan;
-  const status = getTripStatus(plan.startDate, plan.endDate);
-  const styles = STATUS_STYLES[status];
+  const dateStatus = getDateStatus(plan.startDate, plan.endDate);
+  const displayStatus = resolveDisplayStatus(persistedStatus, dateStatus);
+  const styles = STATUS_STYLES[displayStatus];
   const isHost = currentUserId ? trip.host?._id === currentUserId : false;
+  const isMember =
+    isHost ||
+    (currentUserId
+      ? trip.members.some((m) => m.user?._id === currentUserId)
+      : false);
   const companions = trip.members
     .map((m) => m.user)
     .filter((u): u is ITripPerson => !!u && u._id !== trip.host?._id);
+  const destinationLabel = plan.destination?.city
+    ? `${plan.destination.city}, ${plan.destination.country}`
+    : (plan.destination?.country ?? "this trip");
 
   return (
     <motion.div
@@ -246,7 +282,9 @@ function TripCard({
             </h3>
           </div>
           <span className="shrink-0 text-xs font-semibold text-muted-foreground bg-muted/60 border border-border/40 rounded-full px-2.5 py-1">
-            {getCountdownLabel(status, plan.startDate, plan.endDate)}
+            {displayStatus === "cancelled"
+              ? "Cancelled"
+              : getCountdownLabel(dateStatus, plan.startDate, plan.endDate)}
           </span>
         </div>
 
@@ -366,8 +404,37 @@ function TripCard({
           </div>
         )}
 
-        {/* CTA */}
-        <div className="mt-auto pt-4 border-t border-border/40">
+        {/* Actions: host controls, photo upload, and CTA all anchor to the bottom */}
+        <div className="mt-auto pt-4 border-t border-border/40 space-y-2.5">
+          {/* Host controls: complete / cancel */}
+          {isHost && (
+            <TripStatusActions
+              tripId={trip._id}
+              isHost={isHost}
+              dateStatus={dateStatus}
+              persistedStatus={persistedStatus}
+              destination={destinationLabel}
+              onStatusChange={setPersistedStatus}
+            />
+          )}
+
+          {/* Photo upload, unlocked once the trip is marked complete */}
+          {isMember && persistedStatus === TripStatus.COMPLETED && (
+            <div className="flex items-center gap-2">
+              <TripPhotoUpload
+                tripId={trip._id}
+                destination={destinationLabel}
+                existingPhotos={trip.photos}
+              />
+              {trip.photos && trip.photos.length > 0 && (
+                <span className="shrink-0 text-xs font-semibold text-muted-foreground flex items-center gap-1">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
+                  {trip.photos.length} shared
+                </span>
+              )}
+            </div>
+          )}
+
           <Link
             href={`/travel-plans/${plan._id}`}
             className="flex items-center justify-center gap-2 py-2.5 rounded-xl bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20 hover:border-primary/40 transition-all duration-200 text-sm font-semibold"
@@ -400,6 +467,10 @@ function EmptyState({ filter }: { filter: StatusFilter }) {
       title: "No completed trips",
       desc: "Trips you've wrapped up will be archived here for your memories.",
     },
+    cancelled: {
+      title: "No cancelled trips",
+      desc: "Trips you or a host cancel will show up here for reference.",
+    },
   };
   const { title, desc } = config[filter];
 
@@ -410,7 +481,11 @@ function EmptyState({ filter }: { filter: StatusFilter }) {
       className="col-span-full flex flex-col items-center justify-center py-20 text-center gap-4"
     >
       <div className="w-20 h-20 rounded-full flex items-center justify-center bg-primary/10">
-        <Compass className="w-10 h-10 text-primary/50" />
+        {filter === "cancelled" ? (
+          <XCircle className="w-10 h-10 text-primary/50" />
+        ) : (
+          <Compass className="w-10 h-10 text-primary/50" />
+        )}
       </div>
       <div>
         <p className="font-semibold text-foreground text-lg">{title}</p>
@@ -443,9 +518,9 @@ export default function MyTripsComponent({
     () =>
       initialTrips.map((trip) => ({
         trip,
-        status: getTripStatus(
-          trip.travelPlan.startDate,
-          trip.travelPlan.endDate,
+        status: resolveDisplayStatus(
+          trip.status,
+          getDateStatus(trip.travelPlan.startDate, trip.travelPlan.endDate),
         ),
       })),
     [initialTrips],
@@ -457,6 +532,7 @@ export default function MyTripsComponent({
       upcoming: withStatus.filter((t) => t.status === "upcoming").length,
       ongoing: withStatus.filter((t) => t.status === "ongoing").length,
       completed: withStatus.filter((t) => t.status === "completed").length,
+      cancelled: withStatus.filter((t) => t.status === "cancelled").length,
     }),
     [withStatus],
   );
@@ -518,6 +594,11 @@ export default function MyTripsComponent({
       key: "completed",
       label: "Completed",
       color: "bg-muted text-muted-foreground",
+    },
+    {
+      key: "cancelled",
+      label: "Cancelled",
+      color: "bg-rose-500/15 text-rose-600",
     },
   ];
 

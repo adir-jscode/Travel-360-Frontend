@@ -25,6 +25,32 @@ export interface ITripMember {
 }
 
 /**
+ * Mirrors the backend `TripStatus` enum used by `PATCH /trip/:id/status`.
+ * `upcoming` / `ongoing` are normally derived from the travel plan's dates,
+ * but the trip document can be explicitly moved to `completed` or
+ * `cancelled` by the host.
+ */
+export enum TripStatus {
+  UPCOMING = "UPCOMING",
+  ONGOING = "ONGOING",
+  COMPLETED = "COMPLETED",
+  CANCELLED = "CANCELLED",
+}
+
+/**
+ * A single trip photo, matching the shape pushed onto `trip.photos` by
+ * `TripServices.uploadTripPhotos` on the backend.
+ */
+export interface ITripPhoto {
+  _id?: string;
+  url: string;
+  publicId: string;
+  uploadedBy: string | ITripPerson;
+  caption?: string;
+  uploadedAt: string;
+}
+
+/**
  * The travel plan fields populated on a trip, per
  * `.populate('travelPlan', 'destination startDate endDate travelType days budgetMin budgetMax itinerary')`.
  */
@@ -45,6 +71,9 @@ export interface ITrip {
   travelPlan: ITripTravelPlan;
   host: ITripPerson;
   members: ITripMember[];
+  /** Explicit lifecycle status persisted on the trip document. */
+  status?: TripStatus;
+  photos?: ITripPhoto[];
   createdAt: string;
   updatedAt?: string;
 }
