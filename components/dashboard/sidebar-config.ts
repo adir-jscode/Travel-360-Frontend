@@ -38,6 +38,11 @@ export const sidebarConfig: Record<Role, SidebarItem[]> = {
       icon: Ticket,
     },
     {
+      name: "My Trips",
+      href: "/user/dashboard/my-trips",
+      icon: MapPinned,
+    },
+    {
       name: "Change Password",
       href: "/user/dashboard/security",
       icon: Lock,

@@ -88,11 +88,8 @@ export default function DashboardShell({
                 </Link>
               );
             })}
-          </nav>
-
-          <div className="border-t p-4">
             <Signout />
-          </div>
+          </nav>
         </div>
       </aside>
 
