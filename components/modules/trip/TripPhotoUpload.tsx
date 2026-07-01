@@ -36,7 +36,7 @@ interface TripPhotoUploadProps {
   existingPhotos?: ITripPhoto[];
 }
 
-const MAX_PHOTOS = 10;
+const MAX_PHOTOS = 5;
 const MAX_TOTAL_SIZE_BYTES = 1024 * 1024 * 1024; // 1 GB total across all staged photos
 const MAX_TOTAL_SIZE_LABEL = "1 GB";
 

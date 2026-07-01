@@ -60,7 +60,7 @@ export default function LoginForm({ redirect }: LoginFormProps) {
             <span className="font-semibold">👤 User</span>
 
             <span className="text-xs text-muted-foreground">
-              user@gmail.com
+              adir.next@gmail.com
             </span>
           </Button>
 

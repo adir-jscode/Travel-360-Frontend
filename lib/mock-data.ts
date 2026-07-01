@@ -87,15 +87,6 @@ export const destinations: Destination[] = [
     price: "$1,500",
     travelers: 203,
   },
-  {
-    title: "Queenstown, NZ",
-    location: "Oceania",
-    imageUrl:
-      "https://images.unsplash.com/photo-1507699622177-48857e215655?auto=format&fit=crop&w=1200&q=80",
-    rating: 4.9,
-    price: "$2,800",
-    travelers: 98,
-  },
 ];
 
 export const travelers: Traveler[] = [

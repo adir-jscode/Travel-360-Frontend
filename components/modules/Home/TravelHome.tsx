@@ -1,171 +1,139 @@
 import PublicFooter from "@/components/shared/PublicFooter";
+import { Button } from "@/components/ui/button";
+import { destinations, travelPlans } from "@/lib/mock-data";
 import { ArrowRight, Mountain } from "lucide-react";
+import Link from "next/link";
 import { DestinationCard } from "./DestinationCard";
 import { Hero } from "./Hero";
 import { HowItWorks } from "./HowItWorksStep";
+import { StatsBar } from "./StatsBar";
+import { Testimonials } from "./Testimonials";
+import { TopTravelers } from "./TopTravelers";
 import { TripCard } from "./TripCard";
+
 export function TravelHome() {
-  const destinations = [
-    {
-      title: "Bali, Indonesia",
-      location: "Southeast Asia",
-      imageUrl:
-        "https://images.unsplash.com/photo-1537996194471-e657df975ab4?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80",
-      rating: 4.9,
-      price: "$1,200",
-    },
-    {
-      title: "Reykjavik, Iceland",
-      location: "Northern Europe",
-      imageUrl:
-        "https://images.unsplash.com/photo-1476610182048-b716b8518aae?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80",
-      rating: 4.8,
-      price: "$2,400",
-    },
-    {
-      title: "Cusco, Peru",
-      location: "South America",
-      imageUrl:
-        "https://images.unsplash.com/photo-1587595431973-160d0d94add1?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80",
-      rating: 4.9,
-      price: "$1,800",
-    },
-    {
-      title: "Kyoto, Japan",
-      location: "East Asia",
-      imageUrl:
-        "https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80",
-      rating: 4.9,
-      price: "$2,100",
-    },
-    {
-      title: "Marrakech, Morocco",
-      location: "North Africa",
-      imageUrl:
-        "https://images.unsplash.com/photo-1539020140153-e479b8c22e70?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80",
-      rating: 4.7,
-      price: "$1,500",
-    },
-    // {
-    //   title: "Queenstown, NZ",
-    //   location: "Oceania",
-    //   imageUrl:
-    //     "https://images.unsplash.com/photo-1507699622177-48857e215655?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80",
-    //   rating: 4.9,
-    //   price: "$2,800",
-    // },
-  ];
-  const trips = [
-    {
-      title: "Himalayan Trekking Expedition",
-      date: "Oct 15 - Oct 28",
-      groupSize: "8-12",
-      imageUrl:
-        "https://images.unsplash.com/photo-1544735716-392fe2489ffa?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80",
-      spotsLeft: 3,
-    },
-    {
-      title: "Surf Camp in Portugal",
-      date: "Sep 01 - Sep 07",
-      groupSize: "10-15",
-      imageUrl:
-        "https://images.unsplash.com/photo-1502680390469-be75c86b636f?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80",
-      spotsLeft: 5,
-    },
-    {
-      title: "Safari Adventure in Kenya",
-      date: "Nov 10 - Nov 20",
-      groupSize: "6-8",
-      imageUrl:
-        "https://images.unsplash.com/photo-1516426122078-c23e76319801?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80",
-      spotsLeft: 2,
-    },
-    {
-      title: "Northern Lights Hunt",
-      date: "Dec 05 - Dec 12",
-      groupSize: "8-10",
-      imageUrl:
-        "https://images.unsplash.com/photo-1531366936337-7c912a4589a7?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80",
-      spotsLeft: 4,
-    },
-  ];
+  // Upcoming trips are derived from the same public travel plans shown on
+  // /travel-plans, so "View Details" always lands on a real page.
+  const upcomingTrips = travelPlans.slice(0, 4).map((plan) => ({
+    id: plan.id,
+    title: `${plan.destination.city ? `${plan.destination.city}, ` : ""}${plan.destination.country}`,
+    date: `${new Date(plan.startDate).toLocaleDateString("en-US", { month: "short", day: "numeric" })} – ${new Date(plan.endDate).toLocaleDateString("en-US", { month: "short", day: "numeric" })}`,
+    groupSize: plan.travelType === "SOLO" ? "1" : "2-6",
+    imageUrl: destinations.find(
+      (d) => d.title.split(",")[0] === plan.destination.city,
+    )?.imageUrl,
+    spotsLeft: Math.max(1, 8 - (plan.days % 5)),
+  }));
+
   return (
-    <div className="min-h-screen bg-gray-50 font-sans text-gray-900">
+    <div className="min-h-screen bg-background font-sans text-foreground">
+      {/* 1. Hero */}
       <Hero />
 
-      {/* Featured Destinations Section */}
-      <section className="py-20 px-4 md:px-8 lg:px-12">
+      {/* 2. Trust bar */}
+      <StatsBar />
+
+      {/* 3. Popular Destinations */}
+      <section className="px-4 py-20 md:px-8 lg:px-12">
         <div className="mx-auto max-w-7xl">
           <div className="mb-12 flex flex-col items-center justify-between gap-4 md:flex-row">
             <div>
-              <h2 className="text-4xl font-black text-gray-900 md:text-5xl">
+              <h2 className="text-4xl font-black text-foreground md:text-5xl">
                 Popular{" "}
-                <span className="text-transparent bg-clip-text bg-linear-to-r from-orange-500 to-pink-500">
-                  Destinations
-                </span>
+                <span className="text-gradient-sunset">Destinations</span>
               </h2>
-              <p className="mt-2 text-lg text-gray-600">
+              <p className="mt-2 text-lg text-muted-foreground">
                 Discover the most sought-after spots for adventure.
               </p>
             </div>
-            <button className="group flex items-center gap-2 rounded-full border-2 border-gray-900 px-6 py-3 font-bold transition-all hover:bg-gray-900 hover:text-white">
-              View All
-              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-            </button>
+            <Button
+              asChild
+              size="lg"
+              variant="outline"
+              className="rounded-full"
+            >
+              <Link
+                href="/travel-plans"
+                className="group flex items-center gap-2"
+              >
+                View All
+                <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+              </Link>
+            </Button>
           </div>
 
           <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
-            {destinations.map((dest, index) => (
-              <DestinationCard key={index} {...dest} />
+            {destinations.slice(0, 5).map((dest) => (
+              <DestinationCard key={dest.title} {...dest} />
             ))}
           </div>
         </div>
       </section>
 
-      {/* How It Works Section */}
-
+      {/* 4. How It Works */}
       <HowItWorks />
-      {/* <TopTravelers /> */}
 
-      {/* Upcoming Trips Section */}
-      <section className="bg-gray-50 py-20 px-4 md:px-8 lg:px-12">
+      {/* 5. Upcoming Trips */}
+      <section className="bg-secondary/40 px-4 py-20 md:px-8 lg:px-12">
         <div className="mx-auto max-w-7xl">
           <div className="mb-12 flex items-center gap-4">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-100 text-blue-600">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-ocean/10 text-ocean">
               <Mountain className="h-6 w-6" />
             </div>
-            <h2 className="text-4xl font-black text-gray-900 md:text-5xl">
-              Upcoming{" "}
-              <span className="text-transparent bg-clip-text bg-linear-to-r from-blue-500 to-purple-600">
-                Trips
-              </span>
+            <h2 className="text-4xl font-black text-foreground md:text-5xl">
+              Upcoming <span className="text-gradient-sunset">Trips</span>
             </h2>
           </div>
 
           <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4">
-            {trips.map((trip, index) => (
-              <TripCard key={index} {...trip} />
+            {upcomingTrips.map((trip) => (
+              <TripCard
+                key={trip.id}
+                title={trip.title}
+                date={trip.date}
+                groupSize={trip.groupSize}
+                imageUrl={trip.imageUrl ?? destinations[0].imageUrl}
+                spotsLeft={trip.spotsLeft}
+              />
             ))}
           </div>
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="relative py-24 px-4 text-center text-white overflow-hidden">
-        <div className="absolute inset-0 bg-linear-to-br from-blue-600 via-purple-600 to-pink-600" />
-        <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10" />
+      {/* 6. Top Travelers */}
+      <TopTravelers />
+
+      {/* 7. Testimonials */}
+      <Testimonials />
+
+      {/* 8. Final CTA */}
+      <section className="relative overflow-hidden px-4 py-24 text-center">
+        <div className="absolute inset-0 bg-gradient-hero" />
+        <div
+          aria-hidden
+          className="absolute inset-0 opacity-20"
+          style={{
+            backgroundImage:
+              "radial-gradient(circle, rgba(255,255,255,0.5) 1px, transparent 1px)",
+            backgroundSize: "22px 22px",
+          }}
+        />
 
         <div className="relative z-10 mx-auto max-w-4xl">
-          <h2 className="mb-6 text-5xl font-black md:text-7xl">
+          <h2 className="mb-6 text-5xl font-black text-white md:text-7xl">
             Ready to Explore?
           </h2>
-          <p className="mb-10 text-xl font-medium text-blue-100 md:text-2xl">
+          <p className="mb-10 text-xl font-medium text-white/85 md:text-2xl">
             Join thousands of travelers who have found their perfect travel
             buddies.
           </p>
-          <button className="transform rounded-full bg-white px-10 py-5 text-xl font-bold text-purple-600 shadow-2xl transition-all hover:scale-105 hover:shadow-white/20">
-            Join the Adventure
-          </button>
+          <Button
+            asChild
+            size="lg"
+            className="h-auto rounded-full bg-white px-10 py-5 text-xl font-bold text-primary shadow-2xl transition-transform hover:scale-105 hover:bg-white/90"
+          >
+            <Link href="/register">Join the Adventure</Link>
+          </Button>
         </div>
       </section>
 

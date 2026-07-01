@@ -1,4 +1,4 @@
-import { ArrowRight, Calendar, Users } from "lucide-react";
+import { Calendar, Users } from "lucide-react";
 import Image from "next/image";
 interface TripCardProps {
   title: string;
@@ -44,12 +44,12 @@ export function TripCard({
           </div>
         </div>
 
-        <div className="mt-auto">
+        {/* <div className="mt-auto">
           <button className="group/btn flex w-full items-center justify-center gap-2 rounded-xl bg-gray-50 py-3 text-sm font-bold text-gray-900 transition-all hover:bg-linear-to-r hover:from-blue-500 hover:to-purple-600 hover:text-white">
             View Details
             <ArrowRight className="h-4 w-4 transition-transform group-hover/btn:translate-x-1" />
           </button>
-        </div>
+        </div> */}
       </div>
     </div>
   );
