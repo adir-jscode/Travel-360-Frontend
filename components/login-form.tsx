@@ -21,7 +21,7 @@ export default function LoginForm({ redirect }: LoginFormProps) {
   const [password, setPassword] = useState("");
   const fillCredentials = (type: "USER" | "ADMIN") => {
     if (type === "USER") {
-      setEmail("user@gmail.com");
+      setEmail("adir.next@gmail.com");
       setPassword("SecurePass123@");
     } else {
       setEmail("super@gmail.com");
