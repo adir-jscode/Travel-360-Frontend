@@ -2,6 +2,7 @@
 import { Role } from "@/types/user.types";
 import {
   Compass,
+  CreditCard,
   LayoutDashboard,
   Lock,
   Map,
@@ -23,12 +24,12 @@ export type SidebarItem = {
 export const sidebarConfig: Record<Role, SidebarItem[]> = {
   USER: [
     {
-      name: "My Profile",
+      name: "Profile",
       href: "/user/dashboard/my-profile",
       icon: User,
     },
     {
-      name: "My Travel Plans",
+      name: "Travel Plans",
       href: "/user/travel-plans",
       icon: Map,
     },
@@ -41,6 +42,11 @@ export const sidebarConfig: Record<Role, SidebarItem[]> = {
       name: "My Trips",
       href: "/user/dashboard/my-trips",
       icon: MapPinned,
+    },
+    {
+      name: "Payments",
+      href: "/user/dashboard/payments",
+      icon: CreditCard,
     },
     {
       name: "Change Password",
