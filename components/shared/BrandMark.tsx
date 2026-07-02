@@ -8,11 +8,6 @@ const sizeStyles = {
   lg: { badge: "h-11 w-11 rounded-xl", icon: "h-6 w-6", text: "text-xl" },
 } as const;
 
-/**
- * The single source of truth for the Travel360 logo lockup: a Compass
- * glyph on a sunset-gradient badge, next to the wordmark. Used in the
- * navbar, footer, and loading/error states so the brand mark never drifts.
- */
 export function BrandMark({
   size = "md",
   href = "/",

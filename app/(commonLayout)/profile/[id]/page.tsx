@@ -1,3 +1,5 @@
+import { ReviewCard } from "@/components/modules/review/ReviewCard";
+import { getUserReviews } from "@/services/review/review.service";
 import { getUserProfilePublic } from "@/services/user/user.service";
 import { SUBSCRIPTION_PLAN } from "@/types/user.types";
 import {
@@ -86,7 +88,10 @@ export default async function PublicProfilePage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const profile = await getUserProfilePublic(id);
+  const [profile, { reviews, total: reviewCount }] = await Promise.all([
+    getUserProfilePublic(id),
+    getUserReviews(id, 1, 20),
+  ]);
 
   if (!profile) return notFound();
 
@@ -101,7 +106,6 @@ export default async function PublicProfilePage({
     : "Recently";
 
   const avgRating = typeof profile.rating === "number" ? profile.rating : null;
-  const reviewCount = profile.reviews?.length ?? 0;
   const countryCount = profile.visitedCountries?.length ?? 0;
   const interestCount = profile.travelInterest?.length ?? 0;
 
@@ -402,34 +406,16 @@ export default async function PublicProfilePage({
                 </div>
               </div>
               <div className="px-7 py-6">
-                {profile.reviews && reviewCount > 0 ? (
+                {reviews.length > 0 ? (
                   <div className="space-y-4">
-                    {profile.reviews.map((review, idx) => (
-                      <div
-                        key={idx}
-                        className="group relative p-5 rounded-2xl bg-muted/40 border border-border/40 hover:border-border/80 transition-colors"
-                      >
-                        <Quote className="absolute top-4 right-4 w-6 h-6 text-muted-foreground/15" />
-                        <p className="text-sm text-foreground/80 leading-relaxed pr-8">
-                          {review.description}
-                        </p>
-                        <p className="mt-3 text-xs text-muted-foreground">
-                          {new Date(review.createdAt).toLocaleDateString(
-                            "en-US",
-                            {
-                              month: "long",
-                              day: "numeric",
-                              year: "numeric",
-                            },
-                          )}
-                        </p>
-                      </div>
+                    {reviews.map((review) => (
+                      <ReviewCard key={review._id} review={review} />
                     ))}
                   </div>
                 ) : (
                   <EmptySlot
                     icon={<MessageSquare className="w-8 h-8" />}
-                    text="No reviews yet — be the first to leave one"
+                    text="No reviews yet — complete a trip together to leave one"
                   />
                 )}
               </div>

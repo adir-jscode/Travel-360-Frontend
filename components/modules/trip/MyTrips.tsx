@@ -23,6 +23,7 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import { useMemo, useState } from "react";
+import { TripReviewSection } from "../review/TripReviewSection";
 import { TripPhotoUpload } from "./TripPhotoUpload";
 import { TripStatusActions } from "./TripStatusActions";
 
@@ -418,21 +419,34 @@ function TripCard({
             />
           )}
 
-          {/* Photo upload, unlocked once the trip is marked complete */}
+          {/* Photo upload + companion reviews, unlocked once the trip is marked complete */}
           {isMember && persistedStatus === TripStatus.COMPLETED && (
-            <div className="flex items-center gap-2">
-              <TripPhotoUpload
+            <>
+              <div className="flex items-center gap-2">
+                <TripPhotoUpload
+                  tripId={trip._id}
+                  destination={destinationLabel}
+                  existingPhotos={trip.photos}
+                />
+                {trip.photos && trip.photos.length > 0 && (
+                  <span className="shrink-0 text-xs font-semibold text-muted-foreground flex items-center gap-1">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
+                    {trip.photos.length} shared
+                  </span>
+                )}
+              </div>
+
+              <TripReviewSection
                 tripId={trip._id}
-                destination={destinationLabel}
-                existingPhotos={trip.photos}
+                currentUserId={currentUserId}
+                companions={[
+                  ...(trip.host && trip.host._id !== currentUserId
+                    ? [trip.host]
+                    : []),
+                  ...companions,
+                ]}
               />
-              {trip.photos && trip.photos.length > 0 && (
-                <span className="shrink-0 text-xs font-semibold text-muted-foreground flex items-center gap-1">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
-                  {trip.photos.length} shared
-                </span>
-              )}
-            </div>
+            </>
           )}
 
           <Link
